@@ -1,0 +1,2811 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Physics UG-4 Lab | J.U. — Calibration of Magnetic Field Using Hall Effect</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap"
+        rel="stylesheet" />
+    <!-- KaTeX for Exact Mathematical & Vector Typography -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+
+    <style>
+        :root {
+            --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: #eef2f6;
+            color: #0f172a;
+            overflow-x: hidden;
+        }
+
+        .font-digital {
+            font-family: var(--font-mono);
+            letter-spacing: 0.04em;
+        }
+
+        .lab-panel {
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+        }
+
+        /* Custom Scientific Sliders */
+        input[type="range"].lab-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 7px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #cbd5e1, #94a3b8);
+            outline: none;
+        }
+
+        input[type="range"].lab-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 19px;
+            height: 19px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 35%, #3b82f6, #1e3a8a);
+            border: 2px solid #ffffff;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+            cursor: pointer;
+            transition: transform 0.12s ease;
+        }
+
+        input[type="range"].lab-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.12);
+        }
+
+        .katex {
+            font-size: 1.04em;
+        }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+
+            body {
+                background: #ffffff !important;
+            }
+
+            #tab-observations {
+                display: block !important;
+            }
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col">
+
+    <!-- Non-Blocking Toast Banner Container -->
+    <div id="toast-container"
+        class="fixed top-20 right-5 z-50 flex flex-col gap-2 max-w-sm pointer-events-none no-print"></div>
+
+    <!-- Top Academic Header -->
+    <header
+        class="bg-gradient-to-r from-slate-950 via-blue-950 to-slate-950 text-white shadow-lg border-b border-blue-800/60 no-print">
+        <div class="max-w-[1640px] mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-3.5">
+                <div
+                    class="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-orange-600 flex items-center justify-center shadow-inner border border-amber-200/50 shrink-0">
+                    <svg class="w-7 h-7 text-slate-950" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.1">
+                        <circle cx="12" cy="12" r="9" />
+                        <path d="M8 12h8M12 8v8" />
+                        <path d="M5 7c2.5 2 11.5 2 14 0M5 17c2.5-2 11.5-2 14 0" stroke-linecap="round" />
+                    </svg>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2 text-xs font-bold tracking-wider uppercase text-amber-300">
+                        <span>Physics UG-4 Laboratory</span>
+                        <span class="text-slate-400">•</span>
+                        <span>Jadavpur University (J.U.)</span>
+                    </div>
+                    <h1 class="text-base sm:text-lg md:text-xl font-extrabold tracking-tight text-white">
+                        To Calibrate a Magnetic Field Using Hall Effect (Gaussmeter Principle)
+                    </h1>
+                </div>
+            </div>
+
+            <!-- Main Navigation Tabs: Theory -> Procedure -> Simulation -> Graphs & Outputs -->
+            <nav
+                class="flex items-center gap-1.5 bg-slate-900/90 p-1.5 rounded-xl border border-slate-700/80 overflow-x-auto max-w-full">
+                <button onclick="switchTab('theory')" id="btn-tab-theory"
+                    class="tab-btn active px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-2 bg-blue-600 text-white shadow transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                    </svg>
+                    <span>Theory</span>
+                </button>
+                <button onclick="switchTab('procedure')" id="btn-tab-procedure"
+                    class="tab-btn px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-2 text-slate-300 hover:text-white hover:bg-slate-800 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M9 11l3 3L22 4" />
+                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                    </svg>
+                    <span>Procedure</span>
+                </button>
+                <button onclick="switchTab('simulator')" id="btn-tab-simulator"
+                    class="tab-btn px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-2 text-slate-300 hover:text-white hover:bg-slate-800 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <rect x="2" y="3" width="20" height="14" rx="2" />
+                        <path d="M8 21h8M12 17v4" />
+                    </svg>
+                    <span>Simulation</span>
+                </button>
+                <button onclick="switchTab('observations')" id="btn-tab-observations"
+                    class="tab-btn px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-2 text-slate-300 hover:text-white hover:bg-slate-800 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M3 3v18h18" />
+                        <path d="M18 9l-5 5-4-4-3 3" />
+                    </svg>
+                    <span>Graphs &amp; Outputs</span>
+                    <span id="badge-count"
+                        class="ml-0.5 px-1.5 py-0.5 text-[10px] rounded-full bg-amber-400 text-slate-950 font-extrabold">0</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 1: PHOTOREALISTIC INTERACTIVE SIMULATOR                           -->
+    <!-- ===================================================================== -->
+    <main id="tab-simulator"
+        class="hidden flex-1 max-w-[1640px] w-full mx-auto p-3 sm:p-4 grid grid-cols-1 lg:grid-cols-12 gap-4">
+
+        <!-- LEFT 8 COLS: Photorealistic Laboratory Workbench Canvas -->
+        <section class="lg:col-span-8 flex flex-col gap-3">
+            <div class="lab-panel rounded-2xl overflow-hidden flex flex-col">
+                <!-- Workbench Top Status Bar -->
+                <div
+                    class="bg-slate-900 text-slate-200 px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 text-xs border-b border-slate-700">
+                    <div class="flex items-center gap-2">
+                        <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span class="font-bold tracking-wide text-white" id="banner-part-title">PART 1: MAGNETIC FIELD
+                            CALIBRATION (GAUSS METER)</span>
+                    </div>
+                    <div class="flex items-center gap-2.5 font-digital">
+                        <span class="bg-slate-800 px-2.5 py-1 rounded-md border border-slate-700 text-amber-300">
+                            $H$: <strong id="hud-field">0.0</strong> G
+                        </span>
+                        <span class="bg-slate-800 px-2.5 py-1 rounded-md border border-slate-700 text-cyan-300">
+                            Probe: <strong id="hud-probe-pos">Outside Gap</strong>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- High-DPI Canvas Container -->
+                <div id="canvas-wrapper"
+                    class="relative w-full aspect-[16/10] min-h-[410px] sm:min-h-[510px] bg-[#b89f82] select-none cursor-pointer">
+                    <canvas id="labCanvas" class="w-full h-full block"></canvas>
+
+                    <!-- Floating Interactive Controls Overlay -->
+                    <div
+                        class="floating-overlay absolute bottom-3 left-3 right-3 flex flex-wrap items-center justify-between gap-2 pointer-events-none">
+                        <div
+                            class="bg-slate-950/85 backdrop-blur-md text-white text-[11px] px-3 py-1.5 rounded-lg border border-white/15 shadow-lg pointer-events-auto flex items-center gap-2 max-w-xl">
+                            <span class="text-amber-400 font-extrabold uppercase">Bench Action:</span>
+                            <span id="workbench-hint">Set Gauss Meter Range to ×0.1 with probe outside gap and press
+                                Zero to eliminate the +0.0240 kG zero drift, then insert probe.</span>
+                        </div>
+                        <div class="flex items-center gap-2 pointer-events-auto">
+                            <button onclick="openMicroView()"
+                                class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold text-xs px-3.5 py-2 rounded-lg shadow-md transition flex items-center gap-1.5">
+                                <span>🔬 Inspect Crystal Interior</span>
+                            </button>
+                            <button onclick="toggleProbeInsertion()"
+                                class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs px-3.5 py-2 rounded-lg shadow-md transition">
+                                <span id="btn-canvas-insert">Insert Probe into Gap</span>
+                            </button>
+                            <button id="btn-canvas-rotate" onclick="rotateSample180()"
+                                class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-3.5 py-2 rounded-lg shadow-md transition">
+                                Rotate Probe 180°
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- ================================================================= -->
+                    <!-- MICROSCOPIC CRYSTAL INTERIOR MODAL (OPENS ON PROBE CLICK)         -->
+                    <!-- ================================================================= -->
+                    <div id="micro-modal"
+                        class="hidden absolute inset-0 z-30 bg-slate-950/90 backdrop-blur-md flex flex-col p-3 sm:p-4 select-none">
+                        <div
+                            class="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-slate-700/80">
+                            <div class="flex items-center gap-2.5">
+                                <span
+                                    class="px-2 py-0.5 rounded bg-cyan-500/20 border border-cyan-400/50 text-cyan-300 text-[10px] font-extrabold uppercase tracking-wider">Microscopic
+                                    Physics Engine</span>
+                                <h3 id="micro-title" class="text-white font-extrabold text-xs sm:text-sm">Inside
+                                    Germanium Crystal: Carrier Drift, Lorentz Deflection &amp; Hall Field $\vec{E}_n$
+                                </h3>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button onclick="toggleProbeInsertion(); updateMicroHud();"
+                                    class="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-[11px] transition">
+                                    <span id="micro-btn-insert">Insert / Remove Probe</span>
+                                </button>
+                                <button onclick="reverseProbeCurrent(); updateMicroHud();"
+                                    class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] transition">
+                                    ⇄ Reverse $I$
+                                </button>
+                                <button onclick="toggleMagnetPolarity(); updateMicroHud();"
+                                    class="px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[11px] transition">
+                                    ⇄ Reverse $\vec{H}$
+                                </button>
+                                <button onclick="closeMicroView()"
+                                    class="px-3 py-1 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs shadow transition">
+                                    ✕ Back to Bench
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Live Microscopic Canvas -->
+                        <div
+                            class="relative flex-1 my-2 rounded-xl overflow-hidden border border-slate-700 bg-slate-950">
+                            <canvas id="microCanvas" class="w-full h-full block"></canvas>
+                        </div>
+
+                        <!-- Live Microscopic Telemetry Footer -->
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] font-digital">
+                            <div
+                                class="bg-slate-900/90 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-200">
+                                <span class="text-slate-400 block text-[9px] font-sans uppercase">Majority
+                                    Carriers</span>
+                                <strong id="micro-hud-carrier" class="text-amber-300">Holes (+q, p-Ge)</strong>
+                            </div>
+                            <div
+                                class="bg-slate-900/90 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-200">
+                                <span class="text-slate-400 block text-[9px] font-sans uppercase">Current Density
+                                    $\vec{J}$ (X-Axis)</span>
+                                <strong id="micro-hud-curr" class="text-emerald-400">+0.50 mA</strong>
+                            </div>
+                            <div
+                                class="bg-slate-900/90 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-200">
+                                <span class="text-slate-400 block text-[9px] font-sans uppercase">Magnetic Field
+                                    $\vec{H}$ (Z-Axis)</span>
+                                <strong id="micro-hud-field" class="text-cyan-400">0.0 G</strong>
+                            </div>
+                            <div
+                                class="bg-slate-900/90 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-200">
+                                <span class="text-slate-400 block text-[9px] font-sans uppercase">Hall Field $\vec{E}_n$
+                                    &amp; Voltage $V_n$</span>
+                                <strong id="micro-hud-hall" class="text-rose-400">0.00 mV</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Crisp Synchronized Meter Summary Strip -->
+                <div class="lab-panel rounded-2xl p-3.5 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div class="bg-slate-50 rounded-xl p-2.5 border border-slate-200">
+                        <div class="text-[11px] font-bold uppercase text-slate-500">Magnet Coil Current
+                            ($I_{\text{mag}}$)</div>
+                        <div class="text-lg font-extrabold font-digital text-blue-900 mt-0.5"><span
+                                id="readout-imag">0.00</span> A</div>
+                        <div class="text-[11px] text-slate-600" id="readout-mag-pol">Field: Direct ($N \rightarrow S$)
+                        </div>
+                    </div>
+                    <div class="bg-slate-50 rounded-xl p-2.5 border border-slate-200">
+                        <div class="text-[11px] font-bold uppercase text-slate-500">Gaussmeter Reading ($H$)</div>
+                        <div class="text-lg font-extrabold font-digital text-emerald-700 mt-0.5"><span
+                                id="readout-h">0.0</span> Gauss</div>
+                        <div class="text-[11px] text-slate-600"><span id="readout-h-kg">0.0000</span> kG | Probe:
+                            <strong id="readout-probe-angle">0°</strong></div>
+                    </div>
+                    <div class="bg-slate-50 rounded-xl p-2.5 border border-slate-200">
+                        <div class="text-[11px] font-bold uppercase text-slate-500">Sample Current ($I$)</div>
+                        <div class="text-lg font-extrabold font-digital text-indigo-800 mt-0.5"><span
+                                id="readout-iprobe">+0.50</span> mA</div>
+                        <div class="text-[11px] text-slate-600" id="readout-iprobe-dir">Green Plugs: Direct ($+I$)</div>
+                    </div>
+                    <div class="bg-slate-50 rounded-xl p-2.5 border border-slate-200">
+                        <div class="text-[11px] font-bold uppercase text-slate-500">Hall Voltage ($V_n$ Meter)</div>
+                        <div class="text-lg font-extrabold font-digital text-rose-700 mt-0.5"><span
+                                id="readout-vh">0.00</span> mV</div>
+                        <div class="text-[11px] text-slate-600" id="readout-v0-note">Offset $V_0$ included</div>
+                    </div>
+                </div>
+        </section>
+
+        <!-- RIGHT 4 COLS: Two-Part Experiment Selector & Precision Apparatus Controls -->
+        <aside class="lg:col-span-4 flex flex-col gap-3">
+            <!-- Primary Experiment Part Selector Card -->
+            <div class="lab-panel rounded-2xl p-4 flex flex-col gap-3 border-t-4 border-t-blue-700">
+                <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+                    <h2 class="text-xs font-extrabold uppercase tracking-wider text-slate-800 flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+                        Experiment Part Selection
+                    </h2>
+                    <button onclick="resetApparatus()"
+                        class="text-xs font-bold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 px-2.5 py-1 rounded-lg border border-rose-200 transition">
+                        Reset Setup
+                    </button>
+                </div>
+
+                <!-- TWO DISTINCT EXPERIMENT PARTS DROPDOWN -->
+                <div>
+                    <label for="select-part" class="block text-xs font-bold text-slate-700 mb-1">Select Experiment
+                        Part</label>
+                    <select id="select-part" onchange="changeExperimentPart()"
+                        class="w-full rounded-xl border-2 border-blue-600/40 bg-blue-50/40 px-3 py-2.5 text-xs sm:text-sm font-bold text-slate-900 focus:border-blue-600 focus:outline-none shadow-sm">
+                        <option value="part1_gauss">Part 1: Magnetic Field vs Current (Gaussmeter)</option>
+                        <option value="part2_hall">Part 2: Hall Effect Setup (R_H, Carrier Density &amp; H)</option>
+                    </select>
+                </div>
+
+                <!-- Sub-Procedure Selector (Visible in Part 2: Hall Effect Setup) -->
+                <div id="submode-hall-wrapper" class="hidden bg-indigo-50/80 border border-indigo-200 rounded-xl p-2.5">
+                    <label for="select-hall-submode"
+                        class="block text-[11px] font-bold uppercase tracking-wide text-indigo-900 mb-1">
+                        Hall Effect Observation Stage
+                    </label>
+                    <select id="select-hall-submode" onchange="changeHallSubmode()"
+                        class="w-full rounded-lg border border-indigo-300 bg-white px-2.5 py-1.5 text-xs font-bold text-slate-900 focus:outline-none">
+                        <option value="table1">Stage A (Table I): V_n vs. Probe Current I (0.00 – 3.00 mA)</option>
+                        <option value="table2">Stage B (Table II): Calibrate Unknown H vs. I_mag (0.00 – 3.00 A)
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Sample Crystal & Thickness -->
+                <div class="grid grid-cols-2 gap-2.5">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Hall Crystal Sample</label>
+                        <select id="select-material" onchange="updatePhysics()"
+                            class="w-full rounded-xl border border-slate-300 bg-white px-2.5 py-2 text-xs font-semibold text-slate-800 focus:border-blue-600 focus:outline-none">
+                            <option value="p-Ge">p-Type Germanium (Ge)</option>
+                            <option value="n-Ge">n-Type Germanium (Ge)</option>
+                            <option value="InAs">Indium Arsenide (InAs)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">
+                            Thickness $z$: <span id="label-thickness" class="text-blue-700 font-extrabold">0.40
+                                mm</span>
+                        </label>
+                        <input type="range" id="slider-thickness" min="0.10" max="0.90" step="0.05" value="0.40"
+                            oninput="updateThickness(this.value)" class="lab-slider w-full mt-2" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Electromagnet Constant Current Power Supply Controls -->
+            <div class="lab-panel rounded-2xl p-4 flex flex-col gap-3">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xs font-extrabold uppercase tracking-wider text-blue-950">Electromagnet Power Supply
+                    </h3>
+                    <button id="btn-mag-power" onclick="toggleMagnetPower()"
+                        class="px-3 py-1 rounded-lg text-xs font-extrabold bg-slate-200 text-slate-700 hover:bg-slate-300 transition flex items-center gap-1.5">
+                        <span id="dot-mag-power" class="w-2 h-2 rounded-full bg-slate-500"></span>
+                        <span id="text-mag-power">POWER: OFF</span>
+                    </button>
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-center text-xs font-bold mb-1">
+                        <span class="text-slate-700">Variac Current $I_{\text{mag}}$ (0 – 3.00 A)</span>
+                        <div class="flex items-center gap-1">
+                            <input type="number" id="input-imag" min="0" max="3.0" step="0.05" value="0.00"
+                                onchange="setMagnetCurrent(this.value)"
+                                class="w-16 px-1.5 py-0.5 text-right font-digital text-blue-900 font-extrabold border border-slate-300 rounded-md bg-white text-xs" />
+                            <span class="text-blue-900 font-digital">A</span>
+                        </div>
+                    </div>
+                    <input type="range" id="slider-imag" min="0" max="3.0" step="0.05" value="0"
+                        oninput="setMagnetCurrent(this.value)" class="lab-slider w-full" />
+                    <div class="flex justify-between text-[10px] text-slate-500 mt-0.5 font-digital">
+                        <span>0.00 A</span>
+                        <span>1.50 A</span>
+                        <span>3.00 A</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between gap-2">
+                    <button onclick="toggleMagnetPolarity()"
+                        class="flex-1 py-1.5 px-2.5 rounded-xl border border-slate-300 bg-slate-50 hover:bg-slate-100 text-xs font-bold text-slate-800 transition">
+                        ⇄ Reverse Magnetic Field
+                    </button>
+                    <button onclick="quickSetMagnet(1.5)"
+                        class="py-1.5 px-3 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-200 text-xs font-bold transition">
+                        Set 1.50 A
+                    </button>
+                </div>
+            </div>
+
+            <!-- PART 1 CONTROLS: DIGITAL GAUSS METER -->
+            <div id="panel-gauss-controls" class="lab-panel rounded-2xl p-4 flex flex-col gap-3">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xs font-extrabold uppercase tracking-wider text-emerald-950">Digital Gauss Meter
+                        Controls</h3>
+                    <button id="btn-gauss-power" onclick="toggleGaussPower()"
+                        class="px-3 py-1 rounded-lg text-xs font-extrabold bg-emerald-600 text-white shadow-sm transition">
+                        METER: ON
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2.5">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Range Selector</label>
+                        <select id="select-gauss-range" onchange="updatePhysics()"
+                            class="w-full rounded-xl border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-bold text-slate-800">
+                            <option value="0.1" selected>×0.1 (0 – 0.6 kG)</option>
+                            <option value="0.3">×0.3 (0 – 1.8 kG)</option>
+                            <option value="1">×1.0 (0 – 6.0 kG)</option>
+                            <option value="3">×3.0 (0 – 18.0 kG)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Zero Control Knob</label>
+                        <div class="flex items-center gap-1.5">
+                            <input type="range" id="slider-gauss-zero" min="-0.05" max="0.05" step="0.002" value="0.024"
+                                oninput="updatePhysics()" class="lab-slider w-full" />
+                            <button onclick="zeroGaussMeter()"
+                                class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-900 text-[11px] font-bold text-white shrink-0">
+                                Zero
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Probe Orientation Flip for Direct (a,c) vs Reversed (b,d) Sub-columns -->
+                <div
+                    class="flex items-center justify-between gap-2 bg-emerald-50/80 border border-emerald-200 rounded-xl p-2">
+                    <div class="text-xs">
+                        <span class="text-slate-600 block text-[10px] font-bold uppercase">Gauss Probe
+                            Orientation</span>
+                        <strong id="gauss-orient-label" class="text-emerald-950 font-extrabold">0° (Direct Current
+                            Sense)</strong>
+                    </div>
+                    <button onclick="rotateSample180()"
+                        class="px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-sm transition shrink-0">
+                        ↻ Rotate 180°
+                    </button>
+                </div>
+
+                <!-- Quadrant Target Tracker for Part 1 Table -->
+                <div
+                    class="bg-slate-100 rounded-xl p-2.5 border border-slate-200 flex items-center justify-between text-xs">
+                    <div>
+                        <span class="text-slate-500">Part 1 Calibration Table Target:</span>
+                        <strong id="p1-quadrant-label" class="block text-slate-900 font-extrabold">(a) Direct Field,
+                            Probe 0° (Direct)</strong>
+                    </div>
+                    <span id="p1-quadrant-badge"
+                        class="px-2.5 py-1 rounded-lg bg-emerald-600 text-white font-digital font-extrabold">Col
+                        (a)</span>
+                </div>
+
+                <button onclick="logGaussReading()"
+                    class="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs sm:text-sm shadow transition">
+                    + Record Reading to Calibration Table
+                </button>
+            </div>
+
+            <!-- PART 2 CONTROLS: HALL EFFECT CONSTANT CURRENT & MILLIVOLTMETER UNIT -->
+            <div id="panel-hall-controls" class="hidden lab-panel rounded-2xl p-4 flex flex-col gap-3">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xs font-extrabold uppercase tracking-wider text-indigo-950">Hall Effect Set-Up
+                        Controls</h3>
+                    <div class="flex items-center gap-1 bg-slate-200 p-0.5 rounded-lg">
+                        <span class="text-[10px] font-bold text-slate-600 px-1.5">DPM:</span>
+                        <button id="btn-dpm-ma" onclick="setDpmMode('mA')"
+                            class="px-2 py-0.5 rounded-md text-xs font-bold text-slate-700">mA</button>
+                        <button id="btn-dpm-mv" onclick="setDpmMode('mV')"
+                            class="px-2 py-0.5 rounded-md text-xs font-bold bg-indigo-600 text-white">mV</button>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-center text-xs font-bold mb-1">
+                        <span class="text-slate-700">Sample Current $I$ (0 – 3.00 mA)</span>
+                        <div class="flex items-center gap-1">
+                            <input type="number" id="input-iprobe" min="0" max="3.0" step="0.05" value="0.50"
+                                onchange="setProbeCurrent(this.value)"
+                                class="w-16 px-1.5 py-0.5 text-right font-digital text-indigo-900 font-extrabold border border-slate-300 rounded-md bg-white text-xs" />
+                            <span class="text-indigo-900 font-digital">mA</span>
+                        </div>
+                    </div>
+                    <input type="range" id="slider-iprobe" min="0" max="3.0" step="0.05" value="0.50"
+                        oninput="setProbeCurrent(this.value)" class="lab-slider w-full" />
+                    <div class="flex justify-between text-[10px] text-slate-500 mt-0.5 font-digital">
+                        <span>0.00 mA</span>
+                        <span>1.50 mA</span>
+                        <span class="text-rose-600 font-bold">2.50 mA (Limit)</span>
+                    </div>
+                </div>
+
+                <!-- Physical Reversal Controls -->
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="reverseProbeCurrent()"
+                        class="py-2 px-2.5 rounded-xl border border-emerald-400 bg-emerald-50 hover:bg-emerald-100 text-emerald-950 font-extrabold text-xs transition">
+                        ⇄ Swap Green Plugs
+                    </button>
+                    <button onclick="rotateSample180()"
+                        class="py-2 px-2.5 rounded-xl border border-indigo-400 bg-indigo-50 hover:bg-indigo-100 text-indigo-950 font-extrabold text-xs transition">
+                        ↻ Rotate Probe 180°
+                    </button>
+                </div>
+
+                <!-- Quadrant Tracker -->
+                <div
+                    class="bg-slate-100 rounded-xl p-2.5 border border-slate-200 flex items-center justify-between text-xs">
+                    <div>
+                        <span class="text-slate-500">Target Table Column:</span>
+                        <strong id="active-quadrant-label" class="block text-slate-900 font-extrabold">(a) Direct Field,
+                            Direct Current</strong>
+                    </div>
+                    <span id="active-quadrant-badge"
+                        class="px-2.5 py-1 rounded-lg bg-blue-600 text-white font-digital font-extrabold">Col (a)</span>
+                </div>
+
+                <button onclick="logHallReading()"
+                    class="w-full py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs sm:text-sm shadow transition">
+                    + Log $V_n$ Reading to Observation Table
+                </button>
+            </div>
+
+            <!-- Guided Procedure Box -->
+            <div class="bg-amber-50 border border-amber-300 rounded-2xl p-3.5 text-xs text-amber-950">
+                <div
+                    class="font-extrabold uppercase tracking-wider text-amber-900 mb-1 flex items-center justify-between">
+                    <span>Step-by-Step Guide</span>
+                    <button onclick="autoFillDemoData()" class="underline text-blue-700 hover:text-blue-900 font-bold">
+                        Auto-Fill Sample Run
+                    </button>
+                </div>
+                <p id="step-guidance-text" class="leading-relaxed text-amber-950">
+                    1. Keep probe outside gap on <strong>×0.1 range</strong> and click <strong>Zero</strong> to null the
+                    initial +0.0240 kG drift.<br />
+                    2. Insert the Gauss probe, switch to <strong>×1.0 / ×3.0</strong>, and record all 4 sub-columns
+                    <strong>(a, b, c, d)</strong> for any <strong>$I_{\text{mag}}$ (0.00 – 3.00 A)</strong>.
+                </p>
+            </div>
+        </aside>
+    </main>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 2: OBSERVATION TABLES (PART 1 CALIBRATION, TABLE I & TABLE II)    -->
+    <!-- ===================================================================== -->
+    <section id="tab-observations" class="hidden flex-1 max-w-[1640px] w-full mx-auto p-4 flex flex-col gap-6">
+        <div class="lab-panel rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3 no-print">
+            <div>
+                <h2 class="text-lg font-extrabold text-slate-900">J.U. UG-4 Observation Tables &amp; Live Calibration
+                    Plots</h2>
+                <p class="text-xs text-slate-600">Negative readings under reversed magnetic field or reversed probe
+                    orientation are recorded with explicit minus signs ($-$) and averaged by magnitude: $\bar{H} =
+                    \frac{|a|+|b|+|c|+|d|}{N}$.</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+                <button onclick="autoFillDemoData()"
+                    class="px-3.5 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border border-indigo-200 text-xs font-extrabold transition">
+                    Populate Full Sample Dataset
+                </button>
+                <button onclick="exportCSV()"
+                    class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold shadow transition">
+                    Export All Tables (CSV)
+                </button>
+                <button onclick="window.print()"
+                    class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs font-extrabold shadow transition">
+                    Print Lab Sheet
+                </button>
+            </div>
+        </div>
+
+        <!-- Live Calculated Results Summary Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="lab-panel rounded-2xl p-4 border-l-4 border-l-emerald-600">
+                <div class="text-xs font-bold text-slate-500 uppercase">Part 1 Coil Constant ($H / I_{\text{mag}}$)
+                </div>
+                <div class="text-2xl font-extrabold font-digital text-emerald-700 mt-1" id="res-p1-const">— G/A</div>
+                <div class="text-xs text-slate-600 mt-1">From Gaussmeter Calibration Table</div>
+            </div>
+            <div class="lab-panel rounded-2xl p-4 border-l-4 border-l-blue-600">
+                <div class="text-xs font-bold text-slate-500 uppercase">Slope ($\bar{V}_n / I$) — Table I</div>
+                <div class="text-2xl font-extrabold font-digital text-slate-900 mt-1" id="res-slope">— mV/mA</div>
+                <div class="text-xs text-slate-600 mt-1">At $H = $ <span id="res-h-ref">2346</span> Gauss ($1.50\text{
+                    A}$)</div>
+            </div>
+            <div class="lab-panel rounded-2xl p-4 border-l-4 border-l-indigo-600">
+                <div class="text-xs font-bold text-slate-500 uppercase">Hall Coefficient ($R_H$)</div>
+                <div class="text-2xl font-extrabold font-digital text-indigo-700 mt-1" id="res-rh">— m³/C</div>
+                <div class="text-xs text-slate-600 mt-1" id="res-carrier-type">Carrier Type: —</div>
+            </div>
+            <div class="lab-panel rounded-2xl p-4 border-l-4 border-l-amber-500">
+                <div class="text-xs font-bold text-slate-500 uppercase">Carrier Density ($n = \frac{1}{|R_H|e}$)</div>
+                <div class="text-2xl font-extrabold font-digital text-amber-700 mt-1" id="res-density">— m⁻³</div>
+                <div class="text-xs text-slate-600 mt-1">Sample thickness $z = $ <span id="res-z-val">0.40</span> mm
+                </div>
+            </div>
+        </div>
+
+        <!-- =================================================================== -->
+        <!-- PART 1 TABLE & CALIBRATION GRAPH: GAUSSMETER H vs I_mag (0 - 3 A)   -->
+        <!-- =================================================================== -->
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-5">
+            <div class="xl:col-span-7 lab-panel rounded-2xl p-4 overflow-x-auto border-t-4 border-t-emerald-600">
+                <div class="flex items-center justify-between mb-3">
+                    <div>
+                        <h3 class="text-sm font-extrabold text-slate-900">PART 1 CALIBRATION TABLE — Gaussmeter Field
+                            ($H$) vs. Electromagnet Current ($I_{\text{mag}}$)</h3>
+                        <p class="text-xs text-slate-500">Sub-columns $(a,c)$: Probe $0^\circ$ (Direct) | $(b,d)$: Probe
+                            $180^\circ$ (Reverse). Negative readings averaged by magnitude $\bar{H}$.</p>
+                    </div>
+                    <button onclick="clearPart1Table()"
+                        class="text-xs text-rose-600 hover:underline font-bold no-print">Clear Table</button>
+                </div>
+                <table class="w-full text-xs text-center border-collapse border border-slate-300">
+                    <thead>
+                        <tr class="bg-slate-100 text-slate-900 font-bold">
+                            <th rowspan="2" class="border border-slate-300 p-2">Sl. No.</th>
+                            <th rowspan="2" class="border border-slate-300 p-2">Magnet Current $I_{\text{mag}}$ (A)</th>
+                            <th colspan="2" class="border border-slate-300 p-2 bg-emerald-50">Magnetic Field — Direct
+                                ($\vec{H}$ Forward)</th>
+                            <th colspan="2" class="border border-slate-300 p-2 bg-rose-50">Magnetic Field — Reverse
+                                ($\vec{H}$ Opposite)</th>
+                            <th rowspan="2" class="border border-slate-300 p-2 bg-amber-50">Mean Field $\bar{H}$
+                                (Gauss)<br /><span class="font-normal text-[10px]">$\frac{|a|+|b|+|c|+|d|}{N}$</span>
+                            </th>
+                        </tr>
+                        <tr class="bg-slate-50 text-slate-700 font-semibold">
+                            <th class="border border-slate-300 p-1.5">Direct ($0^\circ$) $(a)$</th>
+                            <th class="border border-slate-300 p-1.5">Reverse ($180^\circ$) $(b)$</th>
+                            <th class="border border-slate-300 p-1.5">Direct ($0^\circ$) $(c)$</th>
+                            <th class="border border-slate-300 p-1.5">Reverse ($180^\circ$) $(d)$</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-part1" class="font-digital"></tbody>
+                </table>
+            </div>
+
+            <div class="xl:col-span-5 lab-panel rounded-2xl p-4 flex flex-col border-t-4 border-t-emerald-600">
+                <h3 class="text-sm font-extrabold text-slate-900 mb-0.5">Part 1 Calibration Curve: Mean Magnetic Field
+                    ($\bar{H}$) vs. Current ($I_{\text{mag}}$)</h3>
+                <p class="text-xs text-slate-500 mb-2">Plotted across full recorded range ($0.00\text{ A}$ to
+                    $3.00\text{ A}$)</p>
+                <div class="relative flex-1 min-h-[260px] bg-white rounded-xl border border-slate-200 p-2">
+                    <canvas id="chartPart1" class="w-full h-full"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- =================================================================== -->
+        <!-- PART 2 (STAGE A): TABLE I & GRAPH 1 (V_n vs I_probe)                -->
+        <!-- =================================================================== -->
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-5">
+            <div class="xl:col-span-7 lab-panel rounded-2xl p-4 overflow-x-auto">
+                <div class="flex items-center justify-between mb-3">
+                    <div>
+                        <h3 class="text-sm font-extrabold text-slate-900">TABLE I (Part 2A) — Probe Current ($I$) vs.
+                            Hall Voltage ($V_n$) at $I_{\text{mag}} = 1.50\text{ A}$</h3>
+                        <p class="text-xs text-slate-500">Thickness of sample ($z$) = <span
+                                class="t1-z font-bold">0.40</span> mm</p>
+                    </div>
+                    <button onclick="clearTable1()"
+                        class="text-xs text-rose-600 hover:underline font-bold no-print">Clear Table I</button>
+                </div>
+                <table class="w-full text-xs text-center border-collapse border border-slate-300">
+                    <thead>
+                        <tr class="bg-slate-100 text-slate-900 font-bold">
+                            <th rowspan="2" class="border border-slate-300 p-2">Sl. No.</th>
+                            <th rowspan="2" class="border border-slate-300 p-2">Current through Hall probe $I$ (mA)</th>
+                            <th colspan="2" class="border border-slate-300 p-2 bg-blue-50">Magnetic field (direct)</th>
+                            <th colspan="2" class="border border-slate-300 p-2 bg-indigo-50">Magnetic field (reverse)
+                            </th>
+                            <th rowspan="2" class="border border-slate-300 p-2 bg-emerald-50">Mean Hall Voltage
+                                $\bar{V}_n$ (mV)<br /><span
+                                    class="font-normal text-[10px]">$\frac{|a|+|b|+|c|+|d|}{N}$</span></th>
+                        </tr>
+                        <tr class="bg-slate-50 text-slate-700 font-semibold">
+                            <th class="border border-slate-300 p-1.5">One direction $(a)$</th>
+                            <th class="border border-slate-300 p-1.5">Reverse direction $(b)$</th>
+                            <th class="border border-slate-300 p-1.5">One direction $(c)$</th>
+                            <th class="border border-slate-300 p-1.5">Reverse direction $(d)$</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-table1" class="font-digital"></tbody>
+                </table>
+            </div>
+
+            <div class="xl:col-span-5 lab-panel rounded-2xl p-4 flex flex-col">
+                <h3 class="text-sm font-extrabold text-slate-900 mb-0.5">Graph 1: Mean Hall Voltage ($\bar{V}_n$) vs.
+                    Probe Current ($I$)</h3>
+                <p class="text-xs text-slate-500 mb-2">Equation: $\bar{V}_n = \left(\frac{R_H H}{z}\right) I$</p>
+                <div class="relative flex-1 min-h-[260px] bg-white rounded-xl border border-slate-200 p-2">
+                    <canvas id="chart1" class="w-full h-full"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- =================================================================== -->
+        <!-- PART 2 (STAGE B): TABLE II & GRAPH 2 (Unknown H vs I_mag)           -->
+        <!-- =================================================================== -->
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-5">
+            <div class="xl:col-span-7 lab-panel rounded-2xl p-4 overflow-x-auto">
+                <div class="flex items-center justify-between mb-3">
+                    <div>
+                        <h3 class="text-sm font-extrabold text-slate-900">TABLE II (Part 2B) — Calibration of Unknown
+                            Field ($H$) vs. Coil Current ($I_{\text{mag}}$)</h3>
+                        <p class="text-xs text-slate-500">Fixed Sample Current $I = 0.50\text{ mA}$ | Field $H =
+                            \frac{\bar{V}_n \cdot z}{I \cdot R_H}$</p>
+                    </div>
+                    <button onclick="clearTable2()"
+                        class="text-xs text-rose-600 hover:underline font-bold no-print">Clear Table II</button>
+                </div>
+                <table class="w-full text-xs text-center border-collapse border border-slate-300">
+                    <thead>
+                        <tr class="bg-slate-100 text-slate-900 font-bold">
+                            <th rowspan="2" class="border border-slate-300 p-2">Sl. No.</th>
+                            <th rowspan="2" class="border border-slate-300 p-2">Current in magnet coil $I_{\text{mag}}$
+                                (A)</th>
+                            <th colspan="2" class="border border-slate-300 p-2 bg-blue-50">Magnetic field (direct)</th>
+                            <th colspan="2" class="border border-slate-300 p-2 bg-indigo-50">Magnetic field (reverse)
+                            </th>
+                            <th rowspan="2" class="border border-slate-300 p-2 bg-emerald-50">Mean $\bar{V}_n$ (mV)</th>
+                            <th rowspan="2" class="border border-slate-300 p-2 bg-amber-50">Hall Field $H$ (Gauss)</th>
+                            <th rowspan="2" class="border border-slate-300 p-2 bg-slate-200">Part 1 $\bar{H}$ (Gauss)
+                            </th>
+                        </tr>
+                        <tr class="bg-slate-50 text-slate-700 font-semibold">
+                            <th class="border border-slate-300 p-1.5">One dir $(a)$</th>
+                            <th class="border border-slate-300 p-1.5">Rev dir $(b)$</th>
+                            <th class="border border-slate-300 p-1.5">One dir $(c)$</th>
+                            <th class="border border-slate-300 p-1.5">Rev dir $(d)$</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-table2" class="font-digital"></tbody>
+                </table>
+            </div>
+
+            <div class="xl:col-span-5 lab-panel rounded-2xl p-4 flex flex-col">
+                <h3 class="text-sm font-extrabold text-slate-900 mb-0.5">Graph 2: Calibrated Magnetic Field ($H$) vs.
+                    Coil Current ($I_{\text{mag}}$)</h3>
+                <p class="text-xs text-slate-500 mb-2">Hall-effect calibrated $H$ (blue) overlaid with Part 1 Gaussmeter
+                    $\bar{H}$ (emerald)</p>
+                <div class="relative flex-1 min-h-[260px] bg-white rounded-xl border border-slate-200 p-2">
+                    <canvas id="chart2" class="w-full h-full"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 3: THEORY WITH EXACT KATEX MATHEMATICAL SYMBOLS & DIAGRAMS        -->
+    <!-- ===================================================================== -->
+    <section id="tab-theory" class="flex-1 max-w-5xl w-full mx-auto p-4 sm:p-6">
+        <div class="lab-panel rounded-2xl p-6 sm:p-8 flex flex-col gap-6 leading-relaxed text-slate-800">
+            <div class="border-b border-slate-200 pb-4">
+                <span class="text-xs font-extrabold uppercase tracking-wider text-blue-700">Physics UG-4 Laboratory —
+                    Jadavpur University</span>
+                <h2 class="text-2xl font-extrabold text-slate-900 mt-1">Theory: Calibration of a Magnetic Field Using
+                    Hall Effect</h2>
+            </div>
+
+            <p class="text-sm sm:text-base">
+                In a semiconductor sample, when charge flows with current density $\vec{J}$ in a direction perpendicular
+                to the applied magnetic field $\vec{H}$ ($z$-direction), the Lorentz force produces a mutually
+                perpendicular deflection ($y$-direction) on the charge carriers. Both electrons and holes are deflected
+                toward the <strong>same surface</strong> because of their opposite charges and opposite drift
+                velocities. Due to differences in carrier concentration and mobility, a net charge accumulates on the
+                transverse faces, generating the transverse <strong>Hall Electric Field</strong> $\vec{E}_n$:
+            </p>
+
+            <div class="bg-slate-900 text-white rounded-xl p-4 text-center shadow-inner">
+                $$\vec{E}_n = R \, (\vec{J} \times \vec{H}) \qquad \text{(1)}$$
+            </div>
+
+            <p class="text-sm sm:text-base">
+                where $R$ (or $R_H$) is the <strong>Hall Coefficient</strong>. Consider a rectangular bar of
+                semiconductor having dimensions $x$ (length), $y$ (width), and $z$ (thickness). When $\vec{J}$ is
+                directed along $X$ and $\vec{H}$ is directed along $Z$, the Hall field $\vec{E}_n$ appears along $Y$,
+                producing a measurable transverse Hall voltage $V_n = E_n \, y$ across the width $y$. Since total
+                current $I = J \, z \, y$:
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-blue-50/80 border border-blue-200 rounded-xl p-4 space-y-2">
+                    <h3 class="font-extrabold text-blue-950 text-sm">1. Hall Coefficient ($R$) &amp; Carrier
+                        Concentration ($n$)</h3>
+                    <div class="bg-white rounded-lg p-3 border border-blue-100 text-slate-900 space-y-2">
+                        $$R = \frac{V_n / y}{J H} = \frac{V_n \, z}{I \, H} \quad
+                        \left(\frac{\text{Volt}\cdot\text{m}^3}{\text{Amp}\cdot\text{Weber}}\right) \qquad \text{(2)}$$
+                        $$R = \frac{E_n}{J H} = \frac{v H}{q \, n \, v H} = \frac{1}{n \, q} \qquad \text{(3)}$$
+                    </div>
+                    <p class="text-xs text-slate-700">
+                        At equilibrium, magnetic force $F_m = q(\vec{v} \times \vec{H})$ is balanced by the Hall
+                        electrostatic force $F_n = q E_n$, giving $v H = E_n$ (for $\theta = 90^\circ$) and $J = q n v$.
+                        The sign of $R$ directly determines the sign of the majority charge carriers $q$ ($+R$ for
+                        $p$-type holes, $-R$ for $n$-type electrons).
+                    </p>
+                </div>
+
+                <div class="bg-emerald-50/80 border border-emerald-200 rounded-xl p-4 space-y-2">
+                    <h3 class="font-extrabold text-emerald-950 text-sm">2. Gaussmeter Principle (Unknown Field
+                        Calibration)</h3>
+                    <div class="bg-white rounded-lg p-3 border border-emerald-100 text-slate-900 space-y-2">
+                        $$H = \frac{V_n \, z}{I \, R} \qquad \text{(4)}$$
+                        $$V_n = \left(\frac{R \, H}{z}\right) I \qquad \text{(5)}$$
+                    </div>
+                    <p class="text-xs text-slate-700">
+                        Once $R$ and sample thickness $z$ are known for a fixed sample current $I$, the Hall voltage
+                        $V_n$ varies linearly with the magnetic field $H$, allowing the calibrated Hall probe to act as
+                        a precision <strong>Gaussmeter</strong>.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Exact Diagram Matching J.U. Lab Manual Fig. 1 & Fig. 2 -->
+            <div class="bg-slate-50 rounded-2xl p-5 border border-slate-200 flex flex-col items-center">
+                <svg viewBox="0 0 680 240" class="w-full max-w-2xl h-auto">
+                    <!-- Coordinate Axes X, Y, Z -->
+                    <g stroke="#0f172a" stroke-width="2" fill="none">
+                        <line x1="65" y1="145" x2="135" y2="145" marker-end="url(#arr)" />
+                        <line x1="65" y1="145" x2="65" y2="75" marker-end="url(#arr)" />
+                        <line x1="65" y1="145" x2="28" y2="182" marker-end="url(#arr)" />
+                    </g>
+                    <text x="142" y="149" font-size="14" font-weight="bold" fill="#0f172a">X</text>
+                    <text x="60" y="65" font-size="14" font-weight="bold" fill="#0f172a">Y</text>
+                    <text x="14" y="196" font-size="14" font-weight="bold" fill="#0f172a">Z</text>
+
+                    <!-- Semiconductor Rectangular Bar -->
+                    <polygon points="220,75 490,75 535,42 265,42" fill="#dbeafe" stroke="#1e40af" stroke-width="2" />
+                    <polygon points="220,75 490,75 490,160 220,160" fill="#eff6ff" stroke="#1e40af" stroke-width="2" />
+                    <polygon points="490,75 535,42 535,127 490,160" fill="#bfdbfe" stroke="#1e40af" stroke-width="2" />
+
+                    <!-- Top & Bottom Accumulated Charges -->
+                    <g fill="#dc2626" font-size="13" font-weight="bold">
+                        <circle cx="280" cy="60" r="9" fill="#fee2e2" stroke="#dc2626" /><text x="276" y="64">+</text>
+                        <circle cx="345" cy="60" r="9" fill="#fee2e2" stroke="#dc2626" /><text x="341" y="64">+</text>
+                        <circle cx="410" cy="60" r="9" fill="#fee2e2" stroke="#dc2626" /><text x="406" y="64">+</text>
+                        <circle cx="470" cy="60" r="9" fill="#fee2e2" stroke="#dc2626" /><text x="466" y="64">+</text>
+                    </g>
+                    <g fill="#1d4ed8" font-size="14" font-weight="bold">
+                        <circle cx="270" cy="144" r="9" fill="#dbeafe" stroke="#1d4ed8" /><text x="266" y="148">−</text>
+                        <circle cx="335" cy="144" r="9" fill="#dbeafe" stroke="#1d4ed8" /><text x="331" y="148">−</text>
+                        <circle cx="400" cy="144" r="9" fill="#dbeafe" stroke="#1d4ed8" /><text x="396" y="148">−</text>
+                        <circle cx="465" cy="144" r="9" fill="#dbeafe" stroke="#1d4ed8" /><text x="461" y="148">−</text>
+                    </g>
+
+                    <!-- Current I & Magnetic Field H Vectors -->
+                    <line x1="170" y1="118" x2="215" y2="118" stroke="#059669" stroke-width="2.5"
+                        marker-end="url(#arrGreen)" />
+                    <text x="155" y="122" font-size="14" font-weight="bold" fill="#059669">I</text>
+
+                    <line x1="430" y1="205" x2="395" y2="165" stroke="#d97706" stroke-width="2.5"
+                        marker-end="url(#arrAmber)" />
+                    <text x="438" y="212" font-size="14" font-weight="bold" fill="#b45309">H (Z-direction)</text>
+
+                    <text x="355" y="185" font-size="13" font-weight="bold" fill="#0f172a">x</text>
+                    <text x="546" y="92" font-size="13" font-weight="bold" fill="#0f172a">y</text>
+                    <text x="515" y="158" font-size="13" font-weight="bold" fill="#0f172a">z</text>
+                    <text x="315" y="26" font-size="14" font-weight="bold" fill="#b91c1c">En = Vn / y</text>
+
+                    <defs>
+                        <marker id="arr" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6"
+                            orient="auto-start-reverse">
+                            <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f172a" />
+                        </marker>
+                        <marker id="arrGreen" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6"
+                            orient="auto-start-reverse">
+                            <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669" />
+                        </marker>
+                        <marker id="arrAmber" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6"
+                            orient="auto-start-reverse">
+                            <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706" />
+                        </marker>
+                    </defs>
+                </svg>
+                <span class="text-xs text-slate-600 mt-1">Fig. 1: Carrier separation due to transverse magnetic field
+                    $\vec{H}$ along $Z$ and current $\vec{I}$ along $X$.</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 4: J.U. LAB MANUAL PROCEDURE & PRECAUTIONS                        -->
+    <!-- ===================================================================== -->
+    <section id="tab-procedure" class="hidden flex-1 max-w-5xl w-full mx-auto p-4 sm:p-6">
+        <div class="lab-panel rounded-2xl p-6 sm:p-8 flex flex-col gap-5 text-slate-800">
+            <div class="border-b border-slate-200 pb-3">
+                <span class="text-xs font-extrabold uppercase tracking-wider text-amber-700">J.U. UG-4 Laboratory
+                    Manual</span>
+                <h2 class="text-2xl font-extrabold text-slate-900 mt-1">Experimental Procedure &amp; Mandatory
+                    Precautions</h2>
+            </div>
+
+            <div class="bg-rose-50 border-l-4 border-rose-600 p-4 rounded-r-xl text-xs sm:text-sm text-rose-950">
+                <strong>PRECAUTION YOU MUST OBSERVE:</strong>
+                <ul class="list-disc ml-5 mt-1 space-y-1">
+                    <li>Before putting power to the electromagnet unit, verify that the <strong>Variac knob is at the
+                            minimum position ($0.0\text{ A}$, extreme left)</strong>. Also bring the Variac knob to
+                        minimum before switching OFF.</li>
+                    <li>Maximum allowable current through the Germanium crystal is <strong>$2.5\text{ mA}$
+                            only</strong>.</li>
+                </ul>
+            </div>
+
+            <div class="space-y-4 text-xs sm:text-sm">
+                <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                    <h3 class="font-extrabold text-slate-900 text-base mb-1.5">Part 1: Magnetic Field Measurement Using
+                        Gauss Meter</h3>
+                    <ol class="list-decimal ml-5 space-y-1.5 text-slate-700">
+                        <li>Switch on the Gauss Meter with the probe away from any magnetic field. Check zero adjustment
+                            on the $\times 0.1$ range ($0\text{–}0.6\text{ kGauss}$) using the Zero Control knob.</li>
+                        <li>Keep the range switch at $\times 3$ ($0\text{–}18\text{ kGauss}$) and insert the probe into
+                            the air gap between the pole pieces.</li>
+                        <li>Adjust the electromagnet current (e.g., $0.5\text{ A}$ to $2.5\text{ A}$), step down to the
+                            appropriate lower range ($\times 1$ for $0\text{–}6\text{ kGauss}$), and record the flux
+                            density $H$.</li>
+                    </ol>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                    <h3 class="font-extrabold text-slate-900 text-base mb-1.5">Part 2 (Stage A): Determination of Hall
+                        Coefficient ($R$) &amp; Carrier Density ($n$) — Table I</h3>
+                    <ol class="list-decimal ml-5 space-y-1.5 text-slate-700">
+                        <li>Connect the widthwise contacts (red wires) to the Hall voltage terminals and lengthwise
+                            contacts (green wires) to the current terminals.</li>
+                        <li>With $H = 0$, pass a small current through the crystal to observe the zero-field
+                            misalignment potential $V_0$ (due to imperfect opposite alignment of widthwise contacts).
+                        </li>
+                        <li>Set electromagnet current to $1.5\text{ A}$ and orient the Hall probe perpendicular to
+                            $\vec{H}$ for maximum Hall voltage.</li>
+                        <li>Vary probe current across 5 steps ($0.5, 1.0, 1.5, 2.0, 2.5\text{ mA}$) for <strong>Direct
+                                Current $(a)$</strong> and <strong>Reversed Current $(b)$</strong> (by interchanging the
+                            green banana plugs).</li>
+                        <li>Rotate the sample through $180^\circ$ in the magnetic field and repeat measurements for both
+                            current directions to obtain columns $(c)$ and $(d)$.</li>
+                        <li>Compute mean Hall voltage $\bar{V}_n = \frac{|a|+|b|+|c|+|d|}{4}$, plot $\bar{V}_n$ vs. $I$,
+                            and determine $R = \frac{\text{Slope}\cdot z}{H}$ and $n = \frac{1}{|R|q}$.</li>
+                    </ol>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                    <h3 class="font-extrabold text-slate-900 text-base mb-1.5">Part 2 (Stage B): Calibration of Unknown
+                        Magnetic Field (Gaussmeter Principle) — Table II</h3>
+                    <ol class="list-decimal ml-5 space-y-1.5 text-slate-700">
+                        <li>Fix the sample current at $I = 0.50\text{ mA}$ throughout.</li>
+                        <li>Vary electromagnet coil current across $0.5\text{ A}, 1.0\text{ A}, 1.5\text{ A}, 2.0\text{
+                            A}, \text{and } 2.5\text{ A}$.</li>
+                        <li>At each coil current, record all 4 readings $(a, b, c, d)$ across current reversal and
+                            $180^\circ$ probe rotation, compute $\bar{V}_n$, and evaluate $H = \frac{\bar{V}_n \cdot
+                            z}{I \cdot R}$.</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- JAVASCRIPT PHYSICS ENGINE, PHOTOREALISTIC CANVAS & KATEX RENDERING    -->
+    <!-- ===================================================================== -->
+    <script>
+        // Render all KaTeX formulas on load
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.renderMathInElement) {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        { left: '$$', right: '$$', display: true },
+                        { left: '$', right: '$', display: false }
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+
+        // =========================================================================
+        // 1. PHYSICAL CONSTANTS & STATE
+        // =========================================================================
+        const MATERIALS = {
+            'p-Ge': {
+                name: 'p-Type Germanium (Ge)',
+                Rh: 8.2e-3,
+                carrier: 'Holes (p-type, +R)',
+            },
+            'n-Ge': {
+                name: 'n-Type Germanium (Ge)',
+                Rh: -7.6e-3,
+                carrier: 'Electrons (n-type, −R)',
+            },
+            'InAs': {
+                name: 'Indium Arsenide (InAs)',
+                Rh: -1.25e-2,
+                carrier: 'Electrons (n-type, −R)',
+            }
+        };
+
+        const STATE = {
+            part: 'part1_gauss',       // 'part1_gauss' | 'part2_hall'
+            hallSubmode: 'table1',     // 'table1' | 'table2'
+            material: 'p-Ge',
+            thicknessMm: 0.40,
+
+            // Electromagnet Power Supply
+            magPower: false,
+            magCurrent: 0.0,
+            magPolarity: 1,
+
+            // Probe & Holder Geometry
+            probeInserted: false,
+            probeAnimProgress: 0,
+            sampleAngle: 0,            // 0 = Direct orientation, 180 = Reversed orientation
+
+            // Gauss Meter
+            gaussPower: true,
+            gaussRange: 0.1,
+            gaussZeroOffset: 0.024,
+
+            // Hall Effect Set-up
+            dpmMode: 'mV',
+            probeCurrent: 0.50,
+            probeCurrentDir: 1,
+
+            // Computed Outputs
+            trueFieldGauss: 0,
+            gaussMeterKg: 0,
+            gaussMeterDisplay: '0.0000',
+            hallVoltageMv: 0,
+
+            // Dynamic Observation Tables (Supports ANY current 0.00 to 3.00!)
+            part1Table: [],
+            table1: [],
+            table2: []
+        };
+
+        const HITBOXES = {};
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const styles = {
+                info: 'bg-slate-900 text-white border-blue-500',
+                success: 'bg-emerald-950 text-emerald-100 border-emerald-400',
+                warning: 'bg-amber-950 text-amber-100 border-amber-400',
+                danger: 'bg-rose-950 text-rose-100 border-rose-400'
+            };
+            toast.className = `pointer-events-auto px-4 py-3 rounded-xl border-l-4 shadow-xl text-xs font-medium leading-snug transition-all duration-300 ${styles[type] || styles.info}`;
+            toast.innerHTML = message;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(16px)';
+                setTimeout(() => toast.remove(), 300);
+            }, 4200);
+        }
+
+        // =========================================================================
+        // 2. PHYSICS CALCULATION ENGINE
+        // =========================================================================
+        function computeTrueMagneticField(imag, polarity) {
+            if (!STATE.magPower || imag <= 0) return 0;
+            const magnitudeGauss = 1600 * imag * (1 - 0.015 * imag);
+            return magnitudeGauss * polarity;
+        }
+
+        function updatePhysics() {
+            STATE.material = document.getElementById('select-material').value;
+            STATE.gaussRange = parseFloat(document.getElementById('select-gauss-range').value);
+            STATE.gaussZeroOffset = parseFloat(document.getElementById('slider-gauss-zero').value);
+
+            const rawGapField = computeTrueMagneticField(STATE.magCurrent, STATE.magPolarity);
+            const effectiveFieldGauss = STATE.probeInserted ? rawGapField : rawGapField * 0.01;
+            STATE.trueFieldGauss = rawGapField;
+
+            // Probe orientation sign: 0° = +1 (Direct), 180° = -1 (Reversed)
+            const orientationSign = STATE.sampleAngle === 0 ? 1 : -1;
+
+            // Gauss Meter Display: Reflects both magnetic field polarity AND probe orientation (0° vs 180°)
+            if (!STATE.gaussPower) {
+                STATE.gaussMeterDisplay = 'OFF';
+                STATE.gaussMeterKg = 0;
+            } else {
+                const sensedFieldGauss = effectiveFieldGauss * orientationSign;
+                const fieldKg = (sensedFieldGauss / 1000) + STATE.gaussZeroOffset;
+                STATE.gaussMeterKg = fieldKg;
+                const maxKg = 6 * STATE.gaussRange;
+                STATE.gaussMeterDisplay = Math.abs(fieldKg) > maxKg ? '1.OVER' : fieldKg.toFixed(4);
+            }
+
+            // Hall Voltage (mV) = (R_H * I_mA * H_Gauss * 0.1) / z_mm + Misalignment Offset V0
+            const mat = MATERIALS[STATE.material];
+            const signedCurrentMa = STATE.probeCurrent * STATE.probeCurrentDir;
+            const pureHallMv = (mat.Rh * signedCurrentMa * effectiveFieldGauss * 0.1 * orientationSign) / STATE.thicknessMm;
+            const misalignmentOffsetMv = 0.85 * signedCurrentMa;
+            STATE.hallVoltageMv = pureHallMv + misalignmentOffsetMv;
+
+            // Update Strip Readouts
+            const sensedDisplayGauss = STATE.gaussPower && STATE.gaussMeterDisplay !== '1.OVER'
+                ? parseFloat(STATE.gaussMeterDisplay) * 1000
+                : rawGapField * orientationSign;
+
+            document.getElementById('hud-field').textContent = sensedDisplayGauss.toFixed(1);
+            document.getElementById('hud-probe-pos').textContent = STATE.probeInserted
+                ? `In Gap (${STATE.sampleAngle}°)`
+                : 'Outside Gap';
+
+            document.getElementById('readout-imag').textContent = (STATE.magPower ? STATE.magCurrent : 0).toFixed(2);
+            document.getElementById('readout-mag-pol').innerHTML = STATE.magPolarity === 1 ? 'Field: Direct (N → S)' : 'Field: Reversed (S ← N)';
+            document.getElementById('readout-h').textContent = sensedDisplayGauss.toFixed(1);
+            document.getElementById('readout-h-kg').textContent = (sensedDisplayGauss / 1000).toFixed(4);
+            document.getElementById('readout-probe-angle').textContent = `${STATE.sampleAngle}°`;
+            document.getElementById('gauss-orient-label').textContent = STATE.sampleAngle === 0
+                ? '0° (Direct Current Sense)'
+                : '180° (Reversed Current Sense)';
+
+            document.getElementById('readout-iprobe').textContent = (signedCurrentMa >= 0 ? '+' : '') + signedCurrentMa.toFixed(2);
+            document.getElementById('readout-iprobe-dir').textContent = STATE.probeCurrentDir === 1 ? 'Green Plugs: Direct (+I)' : 'Green Plugs: Swapped (−I)';
+            document.getElementById('readout-vh').textContent = STATE.hallVoltageMv.toFixed(2);
+
+            // Part 1 Quadrant Tracker (Direct/Reverse Field × Probe 0°/180°)
+            const isMagDirect = STATE.magPolarity === 1;
+            const isProbeDirect = STATE.sampleAngle === 0;
+            let p1Col = 'a';
+            let p1Desc = '(a) Direct Field, Probe 0° (Direct)';
+            if (isMagDirect && isProbeDirect) { p1Col = 'a'; p1Desc = '(a) Direct Field, Probe 0° (Direct)'; }
+            else if (isMagDirect && !isProbeDirect) { p1Col = 'b'; p1Desc = '(b) Direct Field, Probe 180° (Reverse)'; }
+            else if (!isMagDirect && isProbeDirect) { p1Col = 'c'; p1Desc = '(c) Reverse Field, Probe 0° (Direct)'; }
+            else { p1Col = 'd'; p1Desc = '(d) Reverse Field, Probe 180° (Reverse)'; }
+
+            document.getElementById('p1-quadrant-label').textContent = p1Desc;
+            document.getElementById('p1-quadrant-badge').textContent = `Col (${p1Col})`;
+
+            // Part 2 Quadrant Tracker
+            const isFieldDirect = (STATE.magPolarity === 1 && STATE.sampleAngle === 0) || (STATE.magPolarity === -1 && STATE.sampleAngle === 180);
+            const isCurrDirect = STATE.probeCurrentDir === 1;
+            let colLetter = 'a';
+            let colDesc = '(a) Direct Field, Direct Current';
+            if (isFieldDirect && isCurrDirect) { colLetter = 'a'; colDesc = '(a) Direct Field, Direct Current'; }
+            else if (isFieldDirect && !isCurrDirect) { colLetter = 'b'; colDesc = '(b) Direct Field, Reverse Current'; }
+            else if (!isFieldDirect && isCurrDirect) { colLetter = 'c'; colDesc = '(c) Reverse Field/180°, Direct Current'; }
+            else { colLetter = 'd'; colDesc = '(d) Reverse Field/180°, Reverse Current'; }
+
+            document.getElementById('active-quadrant-label').textContent = colDesc;
+            document.getElementById('active-quadrant-badge').textContent = `Col (${colLetter})`;
+        }
+
+        // =========================================================================
+        // 3. EXPERIMENT PART SWITCHING & APPARATUS CONTROLS
+        // =========================================================================
+        function changeExperimentPart() {
+            STATE.part = document.getElementById('select-part').value;
+            const isPart1Gauss = STATE.part === 'part1_gauss';
+
+            document.getElementById('panel-gauss-controls').classList.toggle('hidden', !isPart1Gauss);
+            document.getElementById('panel-hall-controls').classList.toggle('hidden', isPart1Gauss);
+            document.getElementById('submode-hall-wrapper').classList.toggle('hidden', isPart1Gauss);
+
+            const banner = document.getElementById('banner-part-title');
+            const hint = document.getElementById('workbench-hint');
+            const guide = document.getElementById('step-guidance-text');
+
+            if (isPart1Gauss) {
+                banner.textContent = 'PART 1: MAGNETIC FIELD VS CURRENT (GAUSSMETER CALIBRATION)';
+                hint.textContent = 'Set Gauss Meter Range to ×0.1 with probe outside gap and press Zero to eliminate the +0.0240 kG zero drift, then insert probe.';
+                guide.innerHTML = `1. Keep probe outside gap on <strong>×0.1 range</strong> and click <strong>Zero</strong> to null the initial +0.0240 kG drift.<br/>2. Insert the Gauss probe, switch to <strong>×1.0 / ×3.0</strong>, and record all 4 sub-columns <strong>(a, b, c, d)</strong> for any <strong>$I_{\\text{mag}}$ (0.00 – 3.00 A)</strong>.`;
+            } else {
+                banner.textContent = 'PART 2: HALL EFFECT SET-UP (R_H, CARRIER DENSITY & UNKNOWN FIELD)';
+                changeHallSubmode();
+            }
+            updatePhysics();
+        }
+
+        function changeHallSubmode() {
+            STATE.hallSubmode = document.getElementById('select-hall-submode').value;
+            const hint = document.getElementById('workbench-hint');
+            const guide = document.getElementById('step-guidance-text');
+
+            if (STATE.hallSubmode === 'table1') {
+                hint.textContent = 'Part 2 (Table I): Fix I_mag = 1.50 A. Record V_n at any Sample Current I (0.00 – 3.00 mA) across all 4 quadrants (a, b, c, d).';
+                guide.innerHTML = `1. Set Electromagnet Current to <strong>1.50 A</strong> and insert Hall probe.<br/>2. Log <strong>V_n</strong> for any <strong>I (0.00 – 3.00 mA)</strong> across <strong>(a)</strong> Dir/Dir, <strong>(b)</strong> Swap Plugs, <strong>(c)</strong> Rotate 180°, <strong>(d)</strong> Swap Plugs.`;
+                if (STATE.magPower && STATE.magCurrent === 0) quickSetMagnet(1.5);
+            } else {
+                hint.textContent = 'Part 2 (Table II): Fix Sample Current I = 0.50 mA. Record V_n at any I_mag (0.00 – 3.00 A) across all 4 quadrants (a, b, c, d).';
+                guide.innerHTML = `1. Fix Sample Current at <strong>0.50 mA</strong>.<br/>2. Set any Magnet Current <strong>I_mag (0.00 – 3.00 A)</strong> and log all 4 quadrants <strong>(a, b, c, d)</strong> at each step.`;
+                setProbeCurrent(0.5);
+            }
+            updatePhysics();
+        }
+
+        function toggleMagnetPower() {
+            if (STATE.magCurrent > 0.05) {
+                showToast('<strong>PRECAUTION VIOLATION!</strong> Bring Variac knob to minimum (<strong>0.00 A</strong>) before switching Electromagnet Power ON or OFF!', 'danger');
+                return;
+            }
+            STATE.magPower = !STATE.magPower;
+            const btn = document.getElementById('btn-mag-power');
+            const dot = document.getElementById('dot-mag-power');
+            const txt = document.getElementById('text-mag-power');
+
+            if (STATE.magPower) {
+                btn.className = 'px-3 py-1 rounded-lg text-xs font-extrabold bg-rose-600 text-white shadow transition flex items-center gap-1.5';
+                dot.className = 'w-2 h-2 rounded-full bg-amber-300 animate-ping';
+                txt.textContent = 'POWER: ON';
+                showToast('Electromagnet Power Supply switched ON safely at 0.00 A.', 'success');
+            } else {
+                btn.className = 'px-3 py-1 rounded-lg text-xs font-extrabold bg-slate-200 text-slate-700 hover:bg-slate-300 transition flex items-center gap-1.5';
+                dot.className = 'w-2 h-2 rounded-full bg-slate-500';
+                txt.textContent = 'POWER: OFF';
+                showToast('Electromagnet Power Supply switched OFF.', 'info');
+            }
+            updatePhysics();
+        }
+
+        function setMagnetCurrent(val) {
+            let num = parseFloat(val);
+            if (isNaN(num)) num = 0;
+            num = Math.max(0, Math.min(3.0, Math.round(num * 100) / 100));
+            STATE.magCurrent = num;
+            document.getElementById('slider-imag').value = num;
+            document.getElementById('input-imag').value = num.toFixed(2);
+            if (num > 0 && !STATE.magPower) {
+                showToast('Switch ON the Electromagnet Power Supply first (after setting Variac to 0.00 A).', 'warning');
+            }
+            updatePhysics();
+        }
+
+        function quickSetMagnet(val) {
+            if (!STATE.magPower) {
+                STATE.magPower = true;
+                const btn = document.getElementById('btn-mag-power');
+                btn.className = 'px-3 py-1 rounded-lg text-xs font-extrabold bg-rose-600 text-white shadow transition flex items-center gap-1.5';
+                document.getElementById('dot-mag-power').className = 'w-2 h-2 rounded-full bg-amber-300 animate-ping';
+                document.getElementById('text-mag-power').textContent = 'POWER: ON';
+            }
+            setMagnetCurrent(val);
+        }
+
+        function toggleMagnetPolarity() {
+            STATE.magPolarity *= -1;
+            showToast(`Electromagnet polarity switched to ${STATE.magPolarity === 1 ? 'Direct (N → S)' : 'Reversed (S ← N)'}.`, 'info');
+            updatePhysics();
+        }
+
+        function toggleGaussPower() {
+            STATE.gaussPower = !STATE.gaussPower;
+            const btn = document.getElementById('btn-gauss-power');
+            btn.textContent = STATE.gaussPower ? 'METER: ON' : 'METER: OFF';
+            btn.className = STATE.gaussPower
+                ? 'px-3 py-1 rounded-lg text-xs font-extrabold bg-emerald-600 text-white shadow-sm transition'
+                : 'px-3 py-1 rounded-lg text-xs font-extrabold bg-slate-300 text-slate-700 transition';
+            updatePhysics();
+        }
+
+        function zeroGaussMeter() {
+            if (STATE.probeInserted && STATE.magPower && STATE.magCurrent > 0) {
+                showToast('Remove the Gauss probe from the magnetic field before zeroing the meter!', 'warning');
+                return;
+            }
+            if (STATE.gaussRange !== 0.1) {
+                showToast('Per J.U. UG-4 manual, select the <strong>×0.1 range</strong> before performing zero adjustment!', 'warning');
+                return;
+            }
+            document.getElementById('slider-gauss-zero').value = 0;
+            updatePhysics();
+            showToast('Gauss Meter zero-adjusted to 0.0000 kGauss on ×0.1 range.', 'success');
+        }
+
+        function toggleProbeInsertion() {
+            STATE.probeInserted = !STATE.probeInserted;
+            document.getElementById('btn-canvas-insert').textContent = STATE.probeInserted ? 'Remove Probe from Gap' : 'Insert Probe into Gap';
+            updatePhysics();
+        }
+
+        function rotateSample180() {
+            STATE.sampleAngle = STATE.sampleAngle === 0 ? 180 : 0;
+            showToast(`Probe rotated to <strong>${STATE.sampleAngle}°</strong> (${STATE.sampleAngle === 0 ? 'Direct' : 'Reversed'} orientation).`, 'info');
+            updatePhysics();
+        }
+
+        function setProbeCurrent(val) {
+            let num = parseFloat(val);
+            if (isNaN(num)) num = 0;
+            num = Math.max(0, Math.min(3.0, Math.round(num * 100) / 100));
+            if (num > 2.5) {
+                showToast('<strong>CRYSTAL SAFETY WARNING:</strong> Maximum recommended current through the Ge crystal is <strong>2.50 mA</strong>!', 'danger');
+            }
+            STATE.probeCurrent = num;
+            document.getElementById('slider-iprobe').value = num;
+            document.getElementById('input-iprobe').value = num.toFixed(2);
+            updatePhysics();
+        }
+
+        function reverseProbeCurrent() {
+            STATE.probeCurrentDir *= -1;
+            showToast(`Green current leads swapped (${STATE.probeCurrentDir === 1 ? 'Direct +I' : 'Reversed −I'}).`, 'info');
+            updatePhysics();
+        }
+
+        function setDpmMode(mode) {
+            STATE.dpmMode = mode;
+            document.getElementById('btn-dpm-ma').className = mode === 'mA'
+                ? 'px-2 py-0.5 rounded-md text-xs font-bold bg-indigo-600 text-white'
+                : 'px-2 py-0.5 rounded-md text-xs font-bold text-slate-700';
+            document.getElementById('btn-dpm-mv').className = mode === 'mV'
+                ? 'px-2 py-0.5 rounded-md text-xs font-bold bg-indigo-600 text-white'
+                : 'px-2 py-0.5 rounded-md text-xs font-bold text-slate-700';
+        }
+
+        function updateThickness(val) {
+            STATE.thicknessMm = parseFloat(val);
+            document.getElementById('label-thickness').textContent = `${STATE.thicknessMm.toFixed(2)} mm`;
+            document.getElementById('res-z-val').textContent = STATE.thicknessMm.toFixed(2);
+            document.querySelectorAll('.t1-z').forEach(el => el.textContent = STATE.thicknessMm.toFixed(2));
+            updatePhysics();
+            renderTablesAndGraphs();
+        }
+
+        function resetApparatus() {
+            STATE.magPower = false;
+            STATE.magCurrent = 0;
+            STATE.magPolarity = 1;
+            STATE.probeInserted = false;
+            STATE.sampleAngle = 0;
+            STATE.probeCurrent = 0.5;
+            STATE.probeCurrentDir = 1;
+            document.getElementById('slider-imag').value = 0;
+            document.getElementById('input-imag').value = '0.00';
+            document.getElementById('slider-iprobe').value = 0.5;
+            document.getElementById('input-iprobe').value = '0.50';
+            document.getElementById('select-gauss-range').value = '0.1';
+            document.getElementById('slider-gauss-zero').value = '0.024';
+            document.getElementById('btn-canvas-insert').textContent = 'Insert Probe into Gap';
+            const btn = document.getElementById('btn-mag-power');
+            btn.className = 'px-3 py-1 rounded-lg text-xs font-extrabold bg-slate-200 text-slate-700 hover:bg-slate-300 transition flex items-center gap-1.5';
+            document.getElementById('dot-mag-power').className = 'w-2 h-2 rounded-full bg-slate-500';
+            document.getElementById('text-mag-power').textContent = 'POWER: OFF';
+            updatePhysics();
+            showToast('Apparatus safely reset to minimum.', 'info');
+        }
+
+        // =========================================================================
+        // 4. DATA LOGGING, DYNAMIC TABLES (0 - 3 A / mA) & LIVE CALIBRATION GRAPHS
+        // =========================================================================
+        function findOrCreateRow(tableArr, keyName, keyVal) {
+            let row = tableArr.find(r => Math.abs(r[keyName] - keyVal) < 0.015);
+            if (!row) {
+                row = { [keyName]: parseFloat(keyVal.toFixed(2)), a: null, b: null, c: null, d: null };
+                tableArr.push(row);
+                tableArr.sort((x, y) => x[keyName] - y[keyName]);
+            }
+            return row;
+        }
+
+        function logGaussReading() {
+            if (!STATE.probeInserted) {
+                showToast('Insert the Gauss probe into the wooden stand between the poles first!', 'warning');
+                return;
+            }
+            if (STATE.gaussMeterDisplay === '1.OVER' || STATE.gaussMeterDisplay === 'OFF') {
+                showToast('Select an appropriate Gauss meter range (e.g. ×1.0 or ×3.0) so the meter is not overloaded.', 'warning');
+                return;
+            }
+
+            const measuredGauss = parseFloat((parseFloat(STATE.gaussMeterDisplay) * 1000).toFixed(1));
+            const isMagDirect = STATE.magPolarity === 1;
+            const isProbeDirect = STATE.sampleAngle === 0;
+            const col = isMagDirect ? (isProbeDirect ? 'a' : 'b') : (isProbeDirect ? 'c' : 'd');
+
+            const row = findOrCreateRow(STATE.part1Table, 'Imag', STATE.magCurrent);
+            row[col] = measuredGauss;
+
+            updateBadgeCount();
+            renderTablesAndGraphs();
+            showToast(`Recorded <strong>${measuredGauss >= 0 ? '+' : ''}${measuredGauss.toFixed(1)} G</strong> in Part 1 Table [I_mag = ${row.Imag.toFixed(2)} A, Col (${col})].`, 'success');
+        }
+
+        function logHallReading() {
+            if (!STATE.probeInserted) {
+                showToast('Insert the Hall crystal probe into the wooden stand between the pole pieces first!', 'warning');
+                return;
+            }
+            const isFieldDirect = (STATE.magPolarity === 1 && STATE.sampleAngle === 0) || (STATE.magPolarity === -1 && STATE.sampleAngle === 180);
+            const isCurrDirect = STATE.probeCurrentDir === 1;
+            const col = isFieldDirect ? (isCurrDirect ? 'a' : 'b') : (isCurrDirect ? 'c' : 'd');
+            const valMv = parseFloat(STATE.hallVoltageMv.toFixed(2));
+
+            if (STATE.hallSubmode === 'table1') {
+                const row = findOrCreateRow(STATE.table1, 'I', STATE.probeCurrent);
+                row[col] = valMv;
+                showToast(`Logged <strong>${valMv >= 0 ? '+' : ''}${valMv.toFixed(2)} mV</strong> to Table I [I = ${row.I.toFixed(2)} mA, Col (${col})].`, 'success');
+            } else {
+                const row = findOrCreateRow(STATE.table2, 'Imag', STATE.magCurrent);
+                row[col] = valMv;
+                showToast(`Logged <strong>${valMv >= 0 ? '+' : ''}${valMv.toFixed(2)} mV</strong> to Table II [I_mag = ${row.Imag.toFixed(2)} A, Col (${col})].`, 'success');
+            }
+
+            updateBadgeCount();
+            renderTablesAndGraphs();
+        }
+
+        function autoFillDemoData() {
+            const mat = MATERIALS[STATE.material];
+            const z = STATE.thicknessMm;
+            const hRef15 = computeTrueMagneticField(1.5, 1);
+
+            STATE.part1Table = [];
+            STATE.table1 = [];
+            STATE.table2 = [];
+
+            // Populate full 0.00 to 3.00 range (0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0)
+            [0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0].forEach((val) => {
+                const hStep = computeTrueMagneticField(val, 1);
+                STATE.part1Table.push({
+                    Imag: val,
+                    a: parseFloat((+hStep).toFixed(1)),
+                    b: parseFloat((-hStep).toFixed(1)),
+                    c: parseFloat((-hStep).toFixed(1)),
+                    d: parseFloat((+hStep).toFixed(1))
+                });
+
+                const vPure1 = (mat.Rh * val * hRef15 * 0.1) / z;
+                const vOff1 = 0.85 * val;
+                STATE.table1.push({
+                    I: val,
+                    a: parseFloat((vPure1 + vOff1).toFixed(2)),
+                    b: parseFloat((-vPure1 - vOff1).toFixed(2)),
+                    c: parseFloat((-vPure1 + vOff1).toFixed(2)),
+                    d: parseFloat((vPure1 - vOff1).toFixed(2))
+                });
+
+                const vPure2 = (mat.Rh * 0.5 * hStep * 0.1) / z;
+                const vOff2 = 0.85 * 0.5;
+                STATE.table2.push({
+                    Imag: val,
+                    a: parseFloat((vPure2 + vOff2).toFixed(2)),
+                    b: parseFloat((-vPure2 - vOff2).toFixed(2)),
+                    c: parseFloat((-vPure2 + vOff2).toFixed(2)),
+                    d: parseFloat((vPure2 - vOff2).toFixed(2))
+                });
+            });
+
+            updateBadgeCount();
+            renderTablesAndGraphs();
+            showToast('Populated complete 0.00 – 3.00 range 4-quadrant datasets into Part 1, Table I &amp; Table II!', 'success');
+        }
+
+        function deleteTableRow(tableKey, idx) {
+            STATE[tableKey].splice(idx, 1);
+            updateBadgeCount();
+            renderTablesAndGraphs();
+        }
+
+        function clearPart1Table() {
+            STATE.part1Table = [];
+            updateBadgeCount();
+            renderTablesAndGraphs();
+        }
+
+        function clearTable1() {
+            STATE.table1 = [];
+            updateBadgeCount();
+            renderTablesAndGraphs();
+        }
+
+        function clearTable2() {
+            STATE.table2 = [];
+            updateBadgeCount();
+            renderTablesAndGraphs();
+        }
+
+        function updateBadgeCount() {
+            let count = 0;
+            [STATE.part1Table, STATE.table1, STATE.table2].forEach(tbl => {
+                tbl.forEach(r => ['a', 'b', 'c', 'd'].forEach(k => { if (r[k] !== null) count++; }));
+            });
+            document.getElementById('badge-count').textContent = count;
+        }
+
+        function computeRowMean(row) {
+            const vals = [row.a, row.b, row.c, row.d].filter(v => v !== null);
+            if (vals.length === 0) return null;
+            return vals.reduce((acc, v) => acc + Math.abs(v), 0) / vals.length;
+        }
+
+        function formatSignedCell(val, decimals) {
+            if (val === null) return '<span class="text-slate-400">—</span>';
+            const formatted = (val > 0 ? '+' : '') + val.toFixed(decimals);
+            if (val < 0) return `<span class="text-rose-700 font-bold">${formatted}</span>`;
+            if (val > 0) return `<span class="text-slate-900 font-semibold">${formatted}</span>`;
+            return `<span class="text-slate-700">${val.toFixed(decimals)}</span>`;
+        }
+
+        function renderTablesAndGraphs() {
+            // 1. Render Part 1 Gaussmeter Calibration Table
+            const tbodyP1 = document.getElementById('tbody-part1');
+            tbodyP1.innerHTML = '';
+            const ptsP1 = [];
+
+            if (STATE.part1Table.length === 0) {
+                tbodyP1.innerHTML = `<tr><td colspan="7" class="p-4 text-slate-400 font-sans">No readings recorded yet. In Part 1, set any current (0.00–3.00 A) and record readings across (a), (b), (c), and (d).</td></tr>`;
+            } else {
+                STATE.part1Table.forEach((row, idx) => {
+                    const mean = computeRowMean(row);
+                    if (mean !== null) ptsP1.push({ x: row.Imag, y: mean });
+                    tbodyP1.innerHTML += `
+            <tr class="hover:bg-slate-50">
+              <td class="border border-slate-300 p-2 font-bold">${idx + 1}</td>
+              <td class="border border-slate-300 p-2 font-extrabold text-emerald-900">${row.Imag.toFixed(2)}</td>
+              <td class="border border-slate-300 p-2">${formatSignedCell(row.a, 1)}</td>
+              <td class="border border-slate-300 p-2">${formatSignedCell(row.b, 1)}</td>
+              <td class="border border-slate-300 p-2">${formatSignedCell(row.c, 1)}</td>
+              <td class="border border-slate-300 p-2">${formatSignedCell(row.d, 1)}</td>
+              <td class="border border-slate-300 p-2 font-extrabold bg-amber-50/80 text-amber-950">${mean !== null ? mean.toFixed(1) : '—'}</td>
+            </tr>
+          `;
+                });
+            }
+
+            const validP1SlopePts = ptsP1.filter(p => p.x > 0);
+            let slopeP1 = null;
+            if (validP1SlopePts.length >= 1) {
+                const num = validP1SlopePts.reduce((s, p) => s + p.x * p.y, 0);
+                const den = validP1SlopePts.reduce((s, p) => s + p.x * p.x, 0);
+                slopeP1 = num / den;
+                document.getElementById('res-p1-const').textContent = `${slopeP1.toFixed(1)} G/A`;
+            } else {
+                document.getElementById('res-p1-const').textContent = '— G/A';
+            }
+
+            // 2. Render Table I (Part 2A)
+            const tbody1 = document.getElementById('tbody-table1');
+            tbody1.innerHTML = '';
+            const pts1 = [];
+
+            if (STATE.table1.length === 0) {
+                tbody1.innerHTML = `<tr><td colspan="7" class="p-4 text-slate-400 font-sans">No readings recorded yet. Switch to Part 2 (Stage A) and log readings for any Probe Current I (0.00–3.00 mA).</td></tr>`;
+            } else {
+                STATE.table1.forEach((row, idx) => {
+                    const mean = computeRowMean(row);
+                    if (mean !== null) pts1.push({ x: row.I, y: mean });
+                    tbody1.innerHTML += `
+            <tr class="hover:bg-slate-50">
+              <td class="border border-slate-300 p-2 font-bold">${idx + 1}</td>
+              <td class="border border-slate-300 p-2 font-extrabold text-blue-900">${row.I.toFixed(2)}</td>
+              <td class="border border-slate-300 p-2">${formatSignedCell(row.a, 2)}</td>
+              <td class="border border-slate-300 p-2">${formatSignedCell(row.b, 2)}</td>
+              <td class="border border-slate-300 p-2">${formatSignedCell(row.c, 2)}</td>
+              <td class="border border-slate-300 p-2">${formatSignedCell(row.d, 2)}</td>
+              <td class="border border-slate-300 p-2 font-extrabold bg-emerald-50/70 text-emerald-900">${mean !== null ? mean.toFixed(2) : '—'}</td>
+            </tr>
+          `;
+                });
+            }
+
+            let slope1 = null;
+            let calculatedRh = Math.abs(MATERIALS[STATE.material].Rh);
+            const hRef = computeTrueMagneticField(1.5, 1);
+            document.getElementById('res-h-ref').textContent = hRef.toFixed(1);
+
+            const validT1Pts = pts1.filter(p => p.x > 0);
+            if (validT1Pts.length >= 1) {
+                const num = validT1Pts.reduce((s, p) => s + p.x * p.y, 0);
+                const den = validT1Pts.reduce((s, p) => s + p.x * p.x, 0);
+                slope1 = num / den;
+                calculatedRh = (slope1 * STATE.thicknessMm) / (hRef * 0.1);
+                const sign = MATERIALS[STATE.material].Rh < 0 ? -1 : 1;
+                const signedRh = sign * calculatedRh;
+                const densityN = 1 / (calculatedRh * 1.602176e-19);
+
+                document.getElementById('res-slope').textContent = `${slope1.toFixed(3)} mV/mA`;
+                document.getElementById('res-rh').textContent = `${signedRh.toExponential(3)} m³/C`;
+                document.getElementById('res-carrier-type').textContent = MATERIALS[STATE.material].carrier;
+                document.getElementById('res-density').textContent = `${densityN.toExponential(3)} m⁻³`;
+            } else {
+                document.getElementById('res-slope').textContent = '— mV/mA';
+                document.getElementById('res-rh').textContent = '— m³/C';
+                document.getElementById('res-density').textContent = '— m⁻³';
+            }
+
+            // 3. Render Table II (Part 2B)
+            const tbody2 = document.getElementById('tbody-table2');
+            tbody2.innerHTML = '';
+            const pts2Hall = [];
+
+            if (STATE.table2.length === 0) {
+                tbody2.innerHTML = `<tr><td colspan="9" class="p-4 text-slate-400 font-sans">No readings recorded yet. Switch to Part 2 (Stage B) and log readings for any Magnet Current I_mag (0.00–3.00 A).</td></tr>`;
+            } else {
+                STATE.table2.forEach((row, idx) => {
+                    const mean = computeRowMean(row);
+                    let calcH = null;
+                    if (mean !== null) {
+                        calcH = (mean * STATE.thicknessMm) / (0.5 * calculatedRh * 0.1);
+                        pts2Hall.push({ x: row.Imag, y: calcH });
+                    }
+                    const matchingP1 = STATE.part1Table.find(r => Math.abs(r.Imag - row.Imag) < 0.015);
+                    const p1MeanH = matchingP1 ? computeRowMean(matchingP1) : null;
+
+                    tbody2.innerHTML += `
+            <tr class="hover:bg-slate-50">
+              <td class="border border-slate-300 p-2 font-bold">${idx + 1}</td>
+              <td class="border border-slate-300 p-2 font-extrabold text-blue-900">${row.Imag.toFixed(2)}</td>
+              <td class="border border-slate-300 p-2">${formatSignedCell(row.a, 2)}</td>
+              <td class="border border-slate-300 p-2">${formatSignedCell(row.b, 2)}</td>
+              <td class="border border-slate-300 p-2">${formatSignedCell(row.c, 2)}</td>
+              <td class="border border-slate-300 p-2">${formatSignedCell(row.d, 2)}</td>
+              <td class="border border-slate-300 p-2 font-extrabold bg-emerald-50/70 text-emerald-900">${mean !== null ? mean.toFixed(2) : '—'}</td>
+              <td class="border border-slate-300 p-2 font-extrabold bg-amber-50/80 text-amber-900">${calcH !== null ? calcH.toFixed(1) : '—'}</td>
+              <td class="border border-slate-300 p-2 text-slate-700">${p1MeanH !== null ? p1MeanH.toFixed(1) : '—'}</td>
+            </tr>
+          `;
+                });
+            }
+
+            // Draw All Three Live Plots (Full 0.00 to 3.00 Range)
+            drawScatterPlot('chartPart1', ptsP1, [], {
+                xLabel: 'Electromagnet Current Imag (A)',
+                yLabel: 'Mean Magnetic Field H̄ (Gauss)',
+                xMax: 3.0,
+                yMax: Math.max(4800, ...ptsP1.map(p => p.y * 1.15)),
+                slope: slopeP1,
+                lineColor: '#059669'
+            });
+
+            drawScatterPlot('chart1', pts1, [], {
+                xLabel: 'Probe Current I (mA)',
+                yLabel: 'Mean Hall Voltage V̄n (mV)',
+                xMax: 3.0,
+                yMax: Math.max(15, ...pts1.map(p => p.y * 1.2)),
+                slope: slope1,
+                lineColor: '#2563eb'
+            });
+
+            const validT2Pts = pts2Hall.filter(p => p.x > 0);
+            const slopeT2 = validT2Pts.length >= 1
+                ? validT2Pts.reduce((s, p) => s + p.x * p.y, 0) / validT2Pts.reduce((s, p) => s + p.x * p.x, 0)
+                : slopeP1;
+
+            drawScatterPlot('chart2', pts2Hall, ptsP1, {
+                xLabel: 'Electromagnet Current Imag (A)',
+                yLabel: 'Magnetic Field H (Gauss)',
+                xMax: 3.0,
+                yMax: Math.max(4800, ...pts2Hall.map(p => p.y * 1.15), ...ptsP1.map(p => p.y * 1.15)),
+                slope: slopeT2,
+                lineColor: '#2563eb'
+            });
+        }
+
+        function drawScatterPlot(canvasId, primaryPts, secondaryPts, opts) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            const rect = canvas.parentElement.getBoundingClientRect();
+            if (rect.width === 0) return;
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            const ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
+
+            const W = rect.width;
+            const H = rect.height;
+            const pad = { top: 20, right: 24, bottom: 42, left: 60 };
+            const plotW = W - pad.left - pad.right;
+            const plotH = H - pad.top - pad.bottom;
+
+            ctx.clearRect(0, 0, W, H);
+
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 5; i++) {
+                const y = pad.top + (plotH * i) / 5;
+                ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left + plotW, y); ctx.stroke();
+                const valY = opts.yMax * (1 - i / 5);
+                ctx.fillStyle = '#64748b';
+                ctx.font = '10px JetBrains Mono, monospace';
+                ctx.textAlign = 'right';
+                ctx.fillText(valY >= 100 ? valY.toFixed(0) : valY.toFixed(1), pad.left - 8, y + 3);
+            }
+
+            for (let i = 0; i <= 6; i++) {
+                const x = pad.left + (plotW * i) / 6;
+                ctx.beginPath(); ctx.moveTo(x, pad.top); ctx.lineTo(x, pad.top + plotH); ctx.stroke();
+                const valX = (opts.xMax * i) / 6;
+                ctx.fillStyle = '#64748b';
+                ctx.textAlign = 'center';
+                ctx.fillText(valX.toFixed(1), x, pad.top + plotH + 16);
+            }
+
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(pad.left, pad.top);
+            ctx.lineTo(pad.left, pad.top + plotH);
+            ctx.lineTo(pad.left + plotW, pad.top + plotH);
+            ctx.stroke();
+
+            ctx.fillStyle = '#0f172a';
+            ctx.font = 'bold 11px Inter, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(opts.xLabel, pad.left + plotW / 2, H - 8);
+
+            ctx.save();
+            ctx.translate(15, pad.top + plotH / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText(opts.yLabel, 0, 0);
+            ctx.restore();
+
+            const toPxX = x => pad.left + (x / opts.xMax) * plotW;
+            const toPxY = y => pad.top + plotH - (y / opts.yMax) * plotH;
+
+            if (opts.slope !== null && opts.slope > 0) {
+                ctx.strokeStyle = opts.lineColor || '#2563eb';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 4]);
+                ctx.beginPath();
+                ctx.moveTo(toPxX(0), toPxY(0));
+                ctx.lineTo(toPxX(opts.xMax), toPxY(opts.slope * opts.xMax));
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            secondaryPts.forEach(p => {
+                ctx.fillStyle = '#10b981';
+                ctx.beginPath();
+                ctx.arc(toPxX(p.x), toPxY(p.y), 6, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            });
+
+            primaryPts.forEach(p => {
+                ctx.fillStyle = '#1d4ed8';
+                ctx.beginPath();
+                ctx.arc(toPxX(p.x), toPxY(p.y), 5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            });
+
+            if (primaryPts.length === 0 && secondaryPts.length === 0) {
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '12px Inter, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('Log readings in Simulator tab to generate live plot', pad.left + plotW / 2, pad.top + plotH / 2);
+            }
+        }
+
+        function exportCSV() {
+            let csv = 'J.U. Physics UG-4 Laboratory - Hall Effect & Gaussmeter Calibration\n\n';
+            csv += 'PART 1 CALIBRATION TABLE: Gaussmeter Field H vs Magnet Current\n';
+            csv += 'Sl No,Magnet Current (A),Direct Field 0 deg (a) [G],Direct Field 180 deg (b) [G],Reverse Field 0 deg (c) [G],Reverse Field 180 deg (d) [G],Mean Field H (Gauss)\n';
+            STATE.part1Table.forEach((r, i) => {
+                const m = computeRowMean(r);
+                csv += `${i + 1},${r.Imag},${r.a ?? ''},${r.b ?? ''},${r.c ?? ''},${r.d ?? ''},${m !== null ? m.toFixed(1) : ''}\n`;
+            });
+            csv += '\nTABLE I (Part 2A): Current vs Hall Voltage (Magnet Current = 1.50 A)\n';
+            csv += 'Sl No,Probe Current (mA),Col a (mV),Col b (mV),Col c (mV),Col d (mV),Mean V_n (mV)\n';
+            STATE.table1.forEach((r, i) => {
+                const m = computeRowMean(r);
+                csv += `${i + 1},${r.I},${r.a ?? ''},${r.b ?? ''},${r.c ?? ''},${r.d ?? ''},${m !== null ? m.toFixed(2) : ''}\n`;
+            });
+            csv += '\nTABLE II (Part 2B): Calibration of Magnetic Field (Probe Current = 0.50 mA)\n';
+            csv += 'Sl No,Magnet Current (A),Col a (mV),Col b (mV),Col c (mV),Col d (mV),Mean V_n (mV),Calculated H (Gauss),Part 1 Gaussmeter H (Gauss)\n';
+            const mat = MATERIALS[STATE.material];
+            STATE.table2.forEach((r, i) => {
+                const m = computeRowMean(r);
+                const hCalc = m !== null ? ((m * STATE.thicknessMm) / (0.5 * Math.abs(mat.Rh) * 0.1)).toFixed(1) : '';
+                const matchingP1 = STATE.part1Table.find(p => Math.abs(p.Imag - r.Imag) < 0.015);
+                const p1H = matchingP1 ? computeRowMean(matchingP1) : null;
+                csv += `${i + 1},${r.Imag},${r.a ?? ''},${r.b ?? ''},${r.c ?? ''},${r.d ?? ''},${m !== null ? m.toFixed(2) : ''},${hCalc},${p1H !== null ? p1H.toFixed(1) : ''}\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'JU_Hall_Effect_Lab_Report.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function switchTab(tabName) {
+            ['theory', 'procedure', 'simulator', 'observations'].forEach(t => {
+                document.getElementById(`tab-${t}`).classList.toggle('hidden', t !== tabName);
+                const btn = document.getElementById(`btn-tab-${t}`);
+                btn.className = t === tabName
+                    ? 'tab-btn active px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-2 bg-blue-600 text-white shadow transition'
+                    : 'tab-btn px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-2 text-slate-300 hover:text-white hover:bg-slate-800 transition';
+            });
+            if (tabName === 'simulator') setTimeout(resizeLabCanvas, 30);
+            if (tabName === 'observations') setTimeout(renderTablesAndGraphs, 40);
+        }
+
+        // =========================================================================
+        // 5. PHOTOREALISTIC HARDWARE RENDERER (3D METALLIC SHADING, SCREWS,
+        //    ANALOG SCALE + CRISP DIGITAL METERS ON EVERY INSTRUMENT)
+        // =========================================================================
+        const canvas = document.getElementById('labCanvas');
+        const ctx = canvas.getContext('2d');
+        let animPhase = 0;
+
+        function resizeLabCanvas() {
+            const wrapper = document.getElementById('canvas-wrapper');
+            const rect = wrapper.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+        }
+
+        function roundRect(ctx, x, y, w, h, r) {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + w - r, y);
+            ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+            ctx.lineTo(x + w, y + h - r);
+            ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            ctx.lineTo(x + r, y + h);
+            ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+            ctx.lineTo(x, y + r);
+            ctx.quadraticCurveTo(x, y, x + r, y);
+            ctx.closePath();
+        }
+
+        function drawScrew(ctx, x, y, r = 3.2) {
+            ctx.save();
+            ctx.fillStyle = '#94a3b8';
+            ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = '#334155'; ctx.lineWidth = 1;
+            ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(x - r * 0.6, y - r * 0.6); ctx.lineTo(x + r * 0.6, y + r * 0.6); ctx.stroke();
+            ctx.restore();
+        }
+
+        function drawKnurledKnob(ctx, cx, cy, r, angleRad, label) {
+            ctx.save();
+            // Drop shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.35)';
+            ctx.beginPath(); ctx.arc(cx + 3, cy + 4, r, 0, Math.PI * 2); ctx.fill();
+
+            // Graduated metallic skirt
+            const skirtGrad = ctx.createRadialGradient(cx - r * 0.3, cy - r * 0.3, r * 0.2, cx, cy, r * 1.15);
+            skirtGrad.addColorStop(0, '#f8fafc');
+            skirtGrad.addColorStop(1, '#64748b');
+            ctx.fillStyle = skirtGrad;
+            ctx.beginPath(); ctx.arc(cx, cy, r * 1.15, 0, Math.PI * 2); ctx.fill();
+
+            // Knurled grip teeth
+            ctx.strokeStyle = '#1e293b';
+            ctx.lineWidth = 1.2;
+            for (let i = 0; i < 18; i++) {
+                const a = (i * Math.PI * 2) / 18;
+                ctx.beginPath();
+                ctx.moveTo(cx + Math.cos(a) * r * 0.92, cy + Math.sin(a) * r * 0.92);
+                ctx.lineTo(cx + Math.cos(a) * r * 1.04, cy + Math.sin(a) * r * 1.04);
+                ctx.stroke();
+            }
+
+            // Main dark Bakelite knob cap
+            const capGrad = ctx.createRadialGradient(cx - r * 0.3, cy - r * 0.3, r * 0.1, cx, cy, r * 0.92);
+            capGrad.addColorStop(0, '#475569');
+            capGrad.addColorStop(0.6, '#1e293b');
+            capGrad.addColorStop(1, '#090d16');
+            ctx.fillStyle = capGrad;
+            ctx.beginPath(); ctx.arc(cx, cy, r * 0.92, 0, Math.PI * 2); ctx.fill();
+
+            // Pointer line
+            ctx.strokeStyle = '#f8fafc';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.moveTo(cx + Math.cos(angleRad) * r * 0.2, cy + Math.sin(angleRad) * r * 0.2);
+            ctx.lineTo(cx + Math.cos(angleRad) * r * 0.85, cy + Math.sin(angleRad) * r * 0.85);
+            ctx.stroke();
+
+            if (label) {
+                ctx.fillStyle = '#1e293b';
+                ctx.font = 'bold 9px Inter, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(label, cx, cy + r * 1.48);
+            }
+            ctx.restore();
+        }
+
+        function draw3DCable(ctx, x1, y1, cx1, cy1, cx2, cy2, x2, y2, mainColor, highlightColor, width = 4.2) {
+            ctx.save();
+            // Ambient table shadow
+            ctx.strokeStyle = 'rgba(15, 23, 42, 0.24)';
+            ctx.lineWidth = width + 2;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(x1, y1 + 4);
+            ctx.bezierCurveTo(cx1, cy1 + 5, cx2, cy2 + 5, x2, y2 + 4);
+            ctx.stroke();
+
+            // Base insulation
+            ctx.strokeStyle = mainColor;
+            ctx.lineWidth = width;
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.bezierCurveTo(cx1, cy1, cx2, cy2, x2, y2);
+            ctx.stroke();
+
+            // Specular sheen highlight
+            ctx.strokeStyle = highlightColor;
+            ctx.lineWidth = width * 0.28;
+            ctx.beginPath();
+            ctx.moveTo(x1, y1 - 0.8);
+            ctx.bezierCurveTo(cx1, cy1 - 0.8, cx2, cy2 - 0.8, x2, y2 - 0.8);
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        function renderWorkbench() {
+            const dpr = window.devicePixelRatio || 1;
+            const W = canvas.width / dpr;
+            const H = canvas.height / dpr;
+            ctx.save();
+            ctx.scale(dpr, dpr);
+
+            STATE.probeAnimProgress += ((STATE.probeInserted ? 1 : 0) - STATE.probeAnimProgress) * 0.14;
+            animPhase += 0.04;
+
+            // 1. Realistic Laboratory Wall & Teakwood Benchtop with Woodgrain
+            const wallH = H * 0.27;
+            const wallGrad = ctx.createLinearGradient(0, 0, 0, wallH);
+            wallGrad.addColorStop(0, '#7c654c');
+            wallGrad.addColorStop(1, '#9c8265');
+            ctx.fillStyle = wallGrad;
+            ctx.fillRect(0, 0, W, wallH);
+
+            const benchGrad = ctx.createLinearGradient(0, wallH, 0, H);
+            benchGrad.addColorStop(0, '#c2ad91');
+            benchGrad.addColorStop(0.55, '#d5c3a8');
+            benchGrad.addColorStop(1, '#ab9577');
+            ctx.fillStyle = benchGrad;
+            ctx.fillRect(0, wallH, W, H - wallH);
+
+            // Subtle woodgrain lines
+            ctx.strokeStyle = 'rgba(110, 82, 52, 0.09)';
+            ctx.lineWidth = 1.2;
+            for (let y = wallH + 14; y < H; y += 18) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.bezierCurveTo(W * 0.3, y + 3, W * 0.7, y - 3, W, y + 1);
+                ctx.stroke();
+            }
+            // Backsplash trim
+            ctx.fillStyle = '#4a3828';
+            ctx.fillRect(0, wallH - 3, W, 6);
+
+            // =====================================================================
+            // 2. HEAVY CAST-IRON ELECTROMAGNET ASSEMBLY (TOP CENTER)
+            // =====================================================================
+            const emCenterX = W * 0.49;
+            const emBaseY = H * 0.43;
+            const emW = Math.min(W * 0.49, 450);
+            const emH = emW * 0.44;
+
+            // Deep bench contact shadow
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.34)';
+            roundRect(ctx, emCenterX - emW * 0.52, emBaseY - emH * 0.11, emW * 1.04, emH * 0.26, 8);
+            ctx.fill();
+
+            // Cast-iron U-yoke base with chamfered metallic highlight
+            const yokeGrad = ctx.createLinearGradient(0, emBaseY - emH * 0.18, 0, emBaseY + emH * 0.14);
+            yokeGrad.addColorStop(0, '#64748b');
+            yokeGrad.addColorStop(0.25, '#334155');
+            yokeGrad.addColorStop(0.85, '#1e293b');
+            yokeGrad.addColorStop(1, '#0f172a');
+            ctx.fillStyle = yokeGrad;
+            roundRect(ctx, emCenterX - emW * 0.5, emBaseY - emH * 0.18, emW, emH * 0.25, 6);
+            ctx.fill();
+
+            // Connecting steel yoke bar
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(emCenterX - emW * 0.36, emBaseY - emH * 0.64, emW * 0.72, emH * 0.14);
+
+            const coilW = emW * 0.30;
+            const coilH = emH * 0.70;
+            const coilY = emBaseY - emH * 0.85;
+
+            [-1, 1].forEach(side => {
+                const cx = side === -1 ? emCenterX - emW * 0.44 : emCenterX + emW * 0.14;
+
+                // End Cheeks / Flanges with bolts
+                ctx.fillStyle = '#475569';
+                roundRect(ctx, cx - 6, coilY - 5, 9, coilH + 10, 3); ctx.fill();
+                roundRect(ctx, cx + coilW - 3, coilY - 5, 9, coilH + 10, 3); ctx.fill();
+
+                // Cylindrical Coil Housing (Realistic multi-band metallic gradient)
+                const cGrad = ctx.createLinearGradient(0, coilY, 0, coilY + coilH);
+                cGrad.addColorStop(0, '#1e293b');
+                cGrad.addColorStop(0.22, '#94a3b8');
+                cGrad.addColorStop(0.36, '#cbd5e1');
+                cGrad.addColorStop(0.55, '#475569');
+                cGrad.addColorStop(0.85, '#1e293b');
+                cGrad.addColorStop(1, '#0f172a');
+                ctx.fillStyle = cGrad;
+                roundRect(ctx, cx, coilY, coilW, coilH, 4);
+                ctx.fill();
+
+                // Subtle coil winding grooves
+                ctx.strokeStyle = 'rgba(15, 23, 42, 0.25)';
+                ctx.lineWidth = 1;
+                for (let gx = cx + 10; gx < cx + coilW - 6; gx += 8) {
+                    ctx.beginPath(); ctx.moveTo(gx, coilY + 2); ctx.lineTo(gx, coilY + coilH - 2); ctx.stroke();
+                }
+
+                // Tapered Conical Soft-Iron Pole Pieces
+                const poleBaseX = side === -1 ? cx + coilW + 6 : cx - 6;
+                const poleTipX = side === -1 ? emCenterX - emW * 0.055 : emCenterX + emW * 0.055;
+                const poleCenterY = coilY + coilH * 0.5;
+
+                const pGrad = ctx.createLinearGradient(0, poleCenterY - coilH * 0.25, 0, poleCenterY + coilH * 0.25);
+                pGrad.addColorStop(0, '#475569');
+                pGrad.addColorStop(0.32, '#f1f5f9');
+                pGrad.addColorStop(0.65, '#64748b');
+                pGrad.addColorStop(1, '#1e293b');
+                ctx.fillStyle = pGrad;
+                ctx.beginPath();
+                ctx.moveTo(poleBaseX, poleCenterY - coilH * 0.25);
+                ctx.lineTo(poleTipX, poleCenterY - coilH * 0.075);
+                ctx.lineTo(poleTipX, poleCenterY + coilH * 0.075);
+                ctx.lineTo(poleBaseX, poleCenterY + coilH * 0.25);
+                ctx.closePath();
+                ctx.fill();
+
+                // N / S Pole Badge
+                if (STATE.magPower && STATE.magCurrent > 0.05) {
+                    const isNorth = (side === -1 && STATE.magPolarity === 1) || (side === 1 && STATE.magPolarity === -1);
+                    const badgeX = (poleBaseX + poleTipX) / 2;
+                    const badgeY = poleCenterY - coilH * 0.34;
+                    ctx.fillStyle = isNorth ? '#dc2626' : '#2563eb';
+                    roundRect(ctx, badgeX - 10, badgeY - 10, 20, 16, 4);
+                    ctx.fill();
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = 'bold 11px Inter, sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(isNorth ? 'N' : 'S', badgeX, badgeY + 2);
+                }
+            });
+
+            // Animated Magnetic Flux Lines Across Air Gap
+            const gapCenterY = coilY + coilH * 0.5;
+            if (STATE.magPower && STATE.magCurrent > 0.05) {
+                const intensity = Math.min(1, STATE.magCurrent / 2.5);
+                ctx.save();
+                ctx.strokeStyle = `rgba(245, 158, 11, ${0.4 + intensity * 0.55})`;
+                ctx.lineWidth = 1.6 + intensity * 1.4;
+                const xStart = emCenterX - emW * 0.052;
+                const xEnd = emCenterX + emW * 0.052;
+
+                [-11, 0, 11].forEach(dy => {
+                    ctx.beginPath(); ctx.moveTo(xStart, gapCenterY + dy); ctx.lineTo(xEnd, gapCenterY + dy); ctx.stroke();
+                    const t = (animPhase * 0.5) % 1;
+                    const arrowX = STATE.magPolarity === 1 ? xStart + (xEnd - xStart) * t : xEnd - (xEnd - xStart) * t;
+                    const dir = STATE.magPolarity;
+                    ctx.beginPath();
+                    ctx.moveTo(arrowX, gapCenterY + dy);
+                    ctx.lineTo(arrowX - 5 * dir, gapCenterY + dy - 3);
+                    ctx.lineTo(arrowX - 5 * dir, gapCenterY + dy + 3);
+                    ctx.closePath();
+                    ctx.fillStyle = '#fbbf24';
+                    ctx.fill();
+                });
+                ctx.restore();
+            }
+
+            // Polished Teakwood Probe Stand in Center
+            const standW = emW * 0.13;
+            const standH = emH * 0.45;
+            const standX = emCenterX - standW / 2;
+            const standY = emBaseY - emH * 0.02;
+
+            ctx.fillStyle = '#78350f';
+            roundRect(ctx, standX - 9, standY + standH - 12, standW + 18, 16, 4);
+            ctx.fill();
+
+            const woodGrad = ctx.createLinearGradient(standX, 0, standX + standW, 0);
+            woodGrad.addColorStop(0, '#92400e');
+            woodGrad.addColorStop(0.45, '#d97706');
+            woodGrad.addColorStop(1, '#78350f');
+            ctx.fillStyle = woodGrad;
+            roundRect(ctx, standX, standY, standW, standH - 8, 3);
+            ctx.fill();
+
+            ctx.fillStyle = '#451a03';
+            ctx.fillRect(emCenterX - 3, standY, 6, 15);
+            HITBOXES.woodenStand = { x: standX - 20, y: gapCenterY - 25, w: standW + 40, h: standH + 40 };
+
+            // =====================================================================
+            // 3. ELECTROMAGNET CONSTANT CURRENT POWER SUPPLY (BOTTOM LEFT)
+            //    WITH CLEAR ANALOG + DIGITAL AMMETER READOUT
+            // =====================================================================
+            const psuW = Math.min(W * 0.30, 275);
+            const psuH = psuW * 0.74;
+            const psuX = W * 0.06;
+            const psuY = H * 0.54;
+
+            // Shadow
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.36)';
+            roundRect(ctx, psuX + 7, psuY + 9, psuW, psuH, 10);
+            ctx.fill();
+
+            // Blue Enameled Metal Casing
+            const psuBodyGrad = ctx.createLinearGradient(psuX, psuY, psuX, psuY + psuH);
+            psuBodyGrad.addColorStop(0, '#3b82f6');
+            psuBodyGrad.addColorStop(0.14, '#2563eb');
+            psuBodyGrad.addColorStop(1, '#1d4ed8');
+            ctx.fillStyle = psuBodyGrad;
+            roundRect(ctx, psuX, psuY, psuW, psuH, 9);
+            ctx.fill();
+
+            // Brushed Aluminum Faceplate
+            const faceGrad = ctx.createLinearGradient(psuX, psuY + 22, psuX, psuY + psuH);
+            faceGrad.addColorStop(0, '#f1f5f9');
+            faceGrad.addColorStop(1, '#cbd5e1');
+            ctx.fillStyle = faceGrad;
+            roundRect(ctx, psuX + 8, psuY + 22, psuW - 16, psuH - 30, 6);
+            ctx.fill();
+
+            // Corner Chassis Screws
+            drawScrew(ctx, psuX + 14, psuY + 28);
+            drawScrew(ctx, psuX + psuW - 14, psuY + 28);
+            drawScrew(ctx, psuX + 14, psuY + psuH - 14);
+            drawScrew(ctx, psuX + psuW - 14, psuY + psuH - 14);
+
+            // Top Chassis Label
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 9.5px Inter, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('CONSTANT CURRENT POWER SUPPLY', psuX + psuW / 2, psuY + 14);
+
+            // Analog Panel Ammeter (0 - 10 A) + Crisp Digital Overlay Readout
+            const meterW = psuW * 0.44;
+            const meterH = psuH * 0.58;
+            const meterX = psuX + 16;
+            const meterY = psuY + 34;
+
+            ctx.fillStyle = '#1e293b';
+            roundRect(ctx, meterX - 2, meterY - 2, meterW + 4, meterH + 4, 6);
+            ctx.fill();
+            ctx.fillStyle = '#ffffff';
+            roundRect(ctx, meterX, meterY, meterW, meterH, 4);
+            ctx.fill();
+
+            // Scale Arc & Tick Marks (0, 2, 4, 6, 8, 10 A)
+            const pivotX = meterX + meterW * 0.24;
+            const pivotY = meterY + meterH * 0.72;
+            const arcR = meterW * 0.58;
+            ctx.strokeStyle = '#0f172a';
+            ctx.lineWidth = 1.4;
+            ctx.beginPath();
+            ctx.arc(pivotX, pivotY, arcR, -Math.PI * 0.46, 0.02);
+            ctx.stroke();
+
+            ctx.fillStyle = '#0f172a';
+            ctx.font = 'bold 8px Inter, sans-serif';
+            for (let aVal = 0; aVal <= 10; aVal += 2) {
+                const ang = -Math.PI * 0.46 + (aVal / 10) * (Math.PI * 0.48);
+                const tx1 = pivotX + Math.cos(ang) * (arcR - 3);
+                const ty1 = pivotY + Math.sin(ang) * (arcR - 3);
+                const tx2 = pivotX + Math.cos(ang) * (arcR + 3);
+                const ty2 = pivotY + Math.sin(ang) * (arcR + 3);
+                ctx.beginPath(); ctx.moveTo(tx1, ty1); ctx.lineTo(tx2, ty2); ctx.stroke();
+                ctx.fillText(aVal.toString(), pivotX + Math.cos(ang) * (arcR + 10), pivotY + Math.sin(ang) * (arcR + 10) + 3);
+            }
+
+            // Moving Needle
+            const activeA = STATE.magPower ? STATE.magCurrent : 0;
+            const needleAngle = -Math.PI * 0.46 + (activeA / 10) * (Math.PI * 0.48);
+            ctx.strokeStyle = '#dc2626';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(pivotX, pivotY);
+            ctx.lineTo(pivotX + Math.cos(needleAngle) * (arcR - 2), pivotY + Math.sin(needleAngle) * (arcR - 2));
+            ctx.stroke();
+
+            // Crystal-Clear Digital Readout Box inside bottom of Ammeter!
+            const amDigW = meterW - 10;
+            const amDigH = 19;
+            const amDigX = meterX + 5;
+            const amDigY = meterY + meterH - amDigH - 4;
+            ctx.fillStyle = '#0f172a';
+            roundRect(ctx, amDigX, amDigY, amDigW, amDigH, 3);
+            ctx.fill();
+            ctx.fillStyle = '#38bdf8';
+            ctx.font = 'bold 11.5px JetBrains Mono, monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(`${activeA.toFixed(2)} A`, amDigX + amDigW / 2, amDigY + 13.5);
+
+            // Large Knurled Variac Knob
+            const knobX = psuX + psuW * 0.67;
+            const knobY = psuY + psuH * 0.52;
+            const knobR = psuW * 0.095;
+            const kAngle = Math.PI * 0.75 + (STATE.magCurrent / 3.0) * (Math.PI * 1.5);
+            drawKnurledKnob(ctx, knobX, knobY, knobR, kAngle, 'VARIAC');
+
+            // Polarity Switch Arrows above Variac
+            ctx.fillStyle = STATE.magPolarity === -1 ? '#1d4ed8' : '#64748b';
+            ctx.font = 'bold 12px Inter, sans-serif';
+            ctx.fillText('◀', knobX - 16, psuY + 39);
+            ctx.fillStyle = STATE.magPolarity === 1 ? '#1d4ed8' : '#64748b';
+            ctx.fillText('▶', knobX + 16, psuY + 39);
+            HITBOXES.magPolarityBtn = { x: knobX - 24, y: psuY + 25, w: 48, h: 20 };
+
+            // Red Neon Pilot Lamp & Power Toggle
+            const ledX = psuX + psuW * 0.88;
+            const ledY = psuY + psuH * 0.36;
+            ctx.fillStyle = STATE.magPower ? '#ef4444' : '#7f1d1d';
+            ctx.beginPath(); ctx.arc(ledX, ledY, 5.5, 0, Math.PI * 2); ctx.fill();
+            if (STATE.magPower) {
+                ctx.fillStyle = 'rgba(239, 68, 68, 0.45)';
+                ctx.beginPath(); ctx.arc(ledX, ledY, 11, 0, Math.PI * 2); ctx.fill();
+            }
+            ctx.fillStyle = '#0f172a';
+            ctx.font = 'bold 8px Inter, sans-serif';
+            ctx.fillText(STATE.magPower ? 'ON' : 'OFF', ledX, ledY + 16);
+            HITBOXES.magPowerBtn = { x: ledX - 18, y: ledY - 15, w: 36, h: 45 };
+
+            // Heavy Insulated Cables from PSU to Electromagnet Coils
+            const postBlackX = psuX + psuW * 0.56;
+            const postRedX = psuX + psuW * 0.80;
+            const postY = psuY + psuH * 0.84;
+
+            draw3DCable(ctx, postBlackX, postY, psuX - 35, H * 0.96, W * 0.02, H * 0.34, emCenterX - emW * 0.46, coilY + coilH * 0.4, '#0f172a', '#64748b', 4.5);
+            draw3DCable(ctx, postRedX, postY, psuX + psuW + 30, H * 0.96, W * 0.74, H * 0.46, emCenterX + emW * 0.46, coilY + coilH * 0.4, '#dc2626', '#fca5a5', 4.5);
+
+            ctx.fillStyle = '#0f172a'; ctx.beginPath(); ctx.arc(postBlackX, postY, 7, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#dc2626'; ctx.beginPath(); ctx.arc(postRedX, postY, 7, 0, Math.PI * 2); ctx.fill();
+
+            // =====================================================================
+            // 4. RIGHT INSTRUMENT: PART 1 (GAUSS METER) OR PART 2 (HALL EFFECT SET-UP)
+            // =====================================================================
+            const instW = Math.min(W * 0.28, 260);
+            const instH = instW * 0.68;
+            const instX = W * 0.55;
+            const instY = H * 0.60;
+
+            // Enclosure Shadow & Brushed Steel Housing
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.34)';
+            roundRect(ctx, instX + 6, instY + 8, instW, instH, 9);
+            ctx.fill();
+
+            const instShellGrad = ctx.createLinearGradient(instX, instY, instX, instY + instH);
+            instShellGrad.addColorStop(0, '#475569');
+            instShellGrad.addColorStop(0.14, '#334155');
+            instShellGrad.addColorStop(1, '#1e293b');
+            ctx.fillStyle = instShellGrad;
+            roundRect(ctx, instX, instY, instW, instH, 8);
+            ctx.fill();
+
+            // Brushed Anodized Front Panel
+            const panelGrad = ctx.createLinearGradient(instX, instY + 20, instX, instY + instH);
+            panelGrad.addColorStop(0, '#e2e8f0');
+            panelGrad.addColorStop(1, '#cbd5e1');
+            ctx.fillStyle = panelGrad;
+            roundRect(ctx, instX + 7, instY + 20, instW - 14, instH - 27, 5);
+            ctx.fill();
+
+            drawScrew(ctx, instX + 13, instY + 26);
+            drawScrew(ctx, instX + instW - 13, instY + 26);
+
+            if (STATE.part === 'part1_gauss') {
+                // --- PART 1: DIGITAL GAUSS METER ---
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 9.5px Inter, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('DIGITAL GAUSS METER', instX + instW / 2, instY + 13);
+
+                // High-Contrast Digital Display (Shows BOTH kGauss & Gauss clearly!)
+                const lcdW = instW * 0.60;
+                const lcdH = instH * 0.42;
+                const lcdX = instX + 14;
+                const lcdY = instY + 32;
+
+                ctx.fillStyle = '#0f172a';
+                roundRect(ctx, lcdX, lcdY, lcdW, lcdH, 5);
+                ctx.fill();
+                ctx.strokeStyle = '#64748b';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+
+                // Main kGauss Value
+                ctx.fillStyle = STATE.gaussPower ? '#4ade80' : '#475569';
+                ctx.font = 'bold 15px JetBrains Mono, monospace';
+                ctx.textAlign = 'right';
+                ctx.fillText(STATE.gaussMeterDisplay, lcdX + lcdW - 8, lcdY + lcdH * 0.50);
+
+                // Sub-line in Gauss so user can read exact Gauss directly on the meter!
+                const gaussText = (!STATE.gaussPower || STATE.gaussMeterDisplay === '1.OVER')
+                    ? '--- G'
+                    : `${(parseFloat(STATE.gaussMeterDisplay) * 1000).toFixed(0)} G`;
+                ctx.fillStyle = '#fbbf24';
+                ctx.font = 'bold 10.5px JetBrains Mono, monospace';
+                ctx.fillText(`${gaussText} (×${STATE.gaussRange})`, lcdX + lcdW - 8, lcdY + lcdH * 0.84);
+
+                // Zero Control Knob
+                drawKnurledKnob(ctx, instX + instW * 0.78, instY + instH * 0.58, 12, STATE.gaussZeroOffset * 35, 'ZERO ADJ');
+
+                // Animated Gauss Probe & Flexible 4-Core Cable
+                const restX = instX - 18;
+                const restY = instY - 12;
+                const targetX = emCenterX;
+                const targetY = gapCenterY;
+                const curProbeX = restX + (targetX - restX) * STATE.probeAnimProgress;
+                const curProbeY = restY + (targetY - restY) * STATE.probeAnimProgress;
+
+                draw3DCable(ctx, instX + instW * 0.82, instY + instH * 0.82, instX + instW + 25, instY + instH + 22, curProbeX + 35, curProbeY + 55, curProbeX, curProbeY + 30, '#e2e8f0', '#ffffff', 3.6);
+
+                ctx.save();
+                ctx.translate(curProbeX, curProbeY);
+                ctx.rotate((1 - STATE.probeAnimProgress) * (-Math.PI / 2));
+                ctx.fillStyle = '#334155';
+                roundRect(ctx, -4.5, 0, 9, 34, 2.5);
+                ctx.fill();
+                ctx.fillStyle = '#d97706';
+                ctx.fillRect(-1.8, -24, 3.6, 24);
+                ctx.restore();
+
+                HITBOXES.probe = { x: curProbeX - 25, y: curProbeY - 25, w: 55, h: 55 };
+
+            } else {
+                // --- PART 2: HALL EFFECT SET-UP (DUAL CLEAR DIGITAL METERS: mA & mV) ---
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 9.5px Inter, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('HALL EFFECT SET-UP (CURRENT & mV)', instX + instW / 2, instY + 13);
+
+                // Dual Digital Readout Windows so BOTH Current (mA) and Hall Voltage (mV) are unmistakably readable!
+                const boxW = (instW - 28) / 2;
+                const boxH = instH * 0.36;
+                const boxY = instY + 30;
+                const leftBoxX = instX + 12;
+                const rightBoxX = leftBoxX + boxW + 4;
+
+                // Left Meter: Sample Current (mA)
+                ctx.fillStyle = '#0f172a';
+                roundRect(ctx, leftBoxX, boxY, boxW, boxH, 4);
+                ctx.fill();
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = 'bold 8px Inter, sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText('CURRENT (I)', leftBoxX + 5, boxY + 10);
+                ctx.fillStyle = '#34d399';
+                ctx.font = 'bold 12px JetBrains Mono, monospace';
+                ctx.textAlign = 'right';
+                const signedMa = STATE.probeCurrent * STATE.probeCurrentDir;
+                ctx.fillText(`${signedMa >= 0 ? '+' : ''}${signedMa.toFixed(2)} mA`, leftBoxX + boxW - 5, boxY + boxH - 6);
+
+                // Right Meter: Hall Voltage V_n (mV)
+                ctx.fillStyle = '#0f172a';
+                roundRect(ctx, rightBoxX, boxY, boxW, boxH, 4);
+                ctx.fill();
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = 'bold 8px Inter, sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText('HALL VOLT (Vn)', rightBoxX + 5, boxY + 10);
+                ctx.fillStyle = '#fbbf24';
+                ctx.font = 'bold 12px JetBrains Mono, monospace';
+                ctx.textAlign = 'right';
+                ctx.fillText(`${STATE.hallVoltageMv.toFixed(2)} mV`, rightBoxX + boxW - 5, boxY + boxH - 6);
+
+                // 4 Color-Coded Banana Terminals (2 Green for Current, 2 Red for Hall Voltage)
+                const termY = instY + instH - 18;
+                const g1X = instX + 26;
+                const g2X = instX + 48;
+                const r1X = instX + instW - 48;
+                const r2X = instX + instW - 26;
+
+                // Animated Ge Crystal PCB Probe
+                const restX = instX - 20;
+                const restY = instY - 14;
+                const targetX = emCenterX;
+                const targetY = gapCenterY;
+                const curX = restX + (targetX - restX) * STATE.probeAnimProgress;
+                const curY = restY + (targetY - restY) * STATE.probeAnimProgress;
+
+                const leftGreenDest = STATE.probeCurrentDir === 1 ? g1X : g2X;
+                const rightGreenDest = STATE.probeCurrentDir === 1 ? g2X : g1X;
+
+                draw3DCable(ctx, leftGreenDest, termY, leftGreenDest, instY + instH + 22, curX + 40, curY + 55, curX - 3, curY + 26, '#059669', '#6ee7b7', 2.6);
+                draw3DCable(ctx, rightGreenDest, termY, rightGreenDest, instY + instH + 28, curX + 48, curY + 60, curX + 3, curY + 26, '#059669', '#6ee7b7', 2.6);
+                draw3DCable(ctx, r1X, termY, r1X + 20, instY + instH + 26, curX + 55, curY + 50, curX - 2, curY + 26, '#dc2626', '#fca5a5', 2.6);
+                draw3DCable(ctx, r2X, termY, r2X + 28, instY + instH + 30, curX + 60, curY + 54, curX + 2, curY + 26, '#dc2626', '#fca5a5', 2.6);
+
+                [g1X, g2X].forEach(gx => {
+                    ctx.fillStyle = '#059669'; ctx.beginPath(); ctx.arc(gx, termY, 6, 0, Math.PI * 2); ctx.fill();
+                });
+                [r1X, r2X].forEach(rx => {
+                    ctx.fillStyle = '#dc2626'; ctx.beginPath(); ctx.arc(rx, termY, 6, 0, Math.PI * 2); ctx.fill();
+                });
+
+                // Current Adjust Knob in Center
+                drawKnurledKnob(ctx, instX + instW / 2, termY - 4, 10, (STATE.probeCurrent / 2.5) * Math.PI * 1.5, '');
+
+                // Ge Crystal Hall Probe PCB Strip
+                ctx.save();
+                ctx.translate(curX, curY);
+                ctx.rotate((1 - STATE.probeAnimProgress) * (-Math.PI / 2));
+
+                ctx.fillStyle = STATE.sampleAngle === 0 ? '#f8fafc' : '#e0e7ff';
+                roundRect(ctx, -9.5, -24, 19, 52, 3);
+                ctx.fill();
+                ctx.strokeStyle = '#475569';
+                ctx.lineWidth = 1.2;
+                ctx.stroke();
+
+                // Rectangular Germanium Crystal Wafer
+                ctx.fillStyle = STATE.sampleAngle === 0 ? '#1e293b' : '#4338ca';
+                ctx.fillRect(-5, -18, 10, 14);
+
+                ctx.fillStyle = STATE.sampleAngle === 0 ? '#059669' : '#dc2626';
+                ctx.font = 'bold 8px Inter, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(STATE.sampleAngle === 0 ? '0°' : '180°', 0, 12);
+                ctx.restore();
+
+                HITBOXES.probe = { x: curX - 25, y: curY - 25, w: 55, h: 55 };
+            }
+
+            ctx.restore();
+            requestAnimationFrame(renderWorkbench);
+        }
+
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const hit = (box) => box && x >= box.x && x <= box.x + box.w && y >= box.y && y <= box.y + box.h;
+
+            if (hit(HITBOXES.probe)) openMicroView();
+            else if (hit(HITBOXES.woodenStand)) toggleProbeInsertion();
+            else if (hit(HITBOXES.magPowerBtn)) toggleMagnetPower();
+            else if (hit(HITBOXES.magPolarityBtn)) toggleMagnetPolarity();
+        });
+
+        // =========================================================================
+        // 6. MICROSCOPIC SEMICONDUCTOR CRYSTAL INTERIOR SIMULATION
+        // =========================================================================
+        const MICRO = {
+            open: false,
+            carriers: [],
+            animId: null
+        };
+
+        function initMicroCarriers() {
+            MICRO.carriers = [];
+            for (let i = 0; i < 42; i++) {
+                MICRO.carriers.push({
+                    x: Math.random(),
+                    y: 0.14 + Math.random() * 0.72,
+                    vxJitter: 0.85 + Math.random() * 0.3,
+                    phase: Math.random() * Math.PI * 2
+                });
+            }
+        }
+
+        function openMicroView() {
+            MICRO.open = true;
+            if (MICRO.carriers.length === 0) initMicroCarriers();
+            const modal = document.getElementById('micro-modal');
+            modal.classList.remove('hidden');
+            updateMicroHud();
+            if (!MICRO.animId) renderMicroSimulation();
+        }
+
+        function closeMicroView() {
+            MICRO.open = false;
+            document.getElementById('micro-modal').classList.add('hidden');
+            if (MICRO.animId) {
+                cancelAnimationFrame(MICRO.animId);
+                MICRO.animId = null;
+            }
+        }
+
+        function updateMicroHud() {
+            if (!MICRO.open) return;
+            const mat = MATERIALS[STATE.material];
+            const isPType = mat.Rh > 0;
+            const signedMa = STATE.probeCurrent * STATE.probeCurrentDir;
+            const orientSign = STATE.sampleAngle === 0 ? 1 : -1;
+            const effH = (STATE.probeInserted ? STATE.trueFieldGauss : STATE.trueFieldGauss * 0.01) * orientSign;
+
+            document.getElementById('micro-title').textContent = `Inside ${mat.name}: Carrier Drift, Lorentz Deflection & Hall Electric Field`;
+            document.getElementById('micro-btn-insert').textContent = STATE.probeInserted ? 'Remove Probe from Gap' : 'Insert Probe into Gap';
+            document.getElementById('micro-hud-carrier').textContent = isPType ? 'Holes (+e, p-Type)' : 'Electrons (−e, n-Type)';
+            document.getElementById('micro-hud-curr').textContent = `${signedMa >= 0 ? '+' : ''}${signedMa.toFixed(2)} mA`;
+            document.getElementById('micro-hud-field').textContent = `${effH >= 0 ? '+' : ''}${effH.toFixed(1)} G`;
+            document.getElementById('micro-hud-hall').textContent = `${STATE.hallVoltageMv >= 0 ? '+' : ''}${STATE.hallVoltageMv.toFixed(2)} mV`;
+        }
+
+        function renderMicroSimulation() {
+            if (!MICRO.open) return;
+            const mCanvas = document.getElementById('microCanvas');
+            const rect = mCanvas.parentElement.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            if (mCanvas.width !== Math.floor(rect.width * dpr) || mCanvas.height !== Math.floor(rect.height * dpr)) {
+                mCanvas.width = Math.floor(rect.width * dpr);
+                mCanvas.height = Math.floor(rect.height * dpr);
+            }
+            const mCtx = mCanvas.getContext('2d');
+            const W = rect.width;
+            const H = rect.height;
+
+            mCtx.save();
+            mCtx.scale(dpr, dpr);
+
+            // Deep Quantum/Lab Background
+            const bgGrad = mCtx.createRadialGradient(W * 0.5, H * 0.5, 20, W * 0.5, H * 0.5, W * 0.75);
+            bgGrad.addColorStop(0, '#0f172a');
+            bgGrad.addColorStop(1, '#020617');
+            mCtx.fillStyle = bgGrad;
+            mCtx.fillRect(0, 0, W, H);
+
+            // Crystal 3D Perspective Slab Geometry
+            const slabX = W * 0.14;
+            const slabY = H * 0.22;
+            const slabW = W * 0.72;
+            const slabH = H * 0.52;
+            const depthX = Math.min(34, W * 0.045);
+            const depthY = Math.min(24, H * 0.06);
+
+            const mat = MATERIALS[STATE.material];
+            const isPType = mat.Rh > 0;
+            const signedMa = STATE.probeCurrent * STATE.probeCurrentDir;
+            const orientSign = STATE.sampleAngle === 0 ? 1 : -1;
+            const effH = (STATE.probeInserted ? STATE.trueFieldGauss : STATE.trueFieldGauss * 0.01) * orientSign;
+
+            // Normalized physical drivers (-1 to +1)
+            const currNorm = Math.max(-1, Math.min(1, signedMa / 2.5));
+            const fieldNorm = Math.max(-1, Math.min(1, effH / 4000));
+            // Hall transverse polarity: Rh * I * H
+            const hallNorm = Math.max(-1, Math.min(1, (isPType ? 1 : -1) * currNorm * fieldNorm * 1.4));
+
+            // Draw 3D Crystalline Lattice Grid Lines
+            mCtx.strokeStyle = 'rgba(56, 189, 248, 0.12)';
+            mCtx.lineWidth = 1;
+            for (let gx = slabX + 35; gx < slabX + slabW; gx += 42) {
+                mCtx.beginPath(); mCtx.moveTo(gx, slabY); mCtx.lineTo(gx, slabY + slabH); mCtx.stroke();
+            }
+            for (let gy = slabY + 30; gy < slabY + slabH; gy += 36) {
+                mCtx.beginPath(); mCtx.moveTo(slabX, gy); mCtx.lineTo(slabX + slabW, gy); mCtx.stroke();
+            }
+
+            // Top & Side 3D Faces of Ge Semiconductor Bar
+            mCtx.fillStyle = 'rgba(30, 58, 138, 0.35)';
+            mCtx.strokeStyle = '#38bdf8';
+            mCtx.lineWidth = 1.6;
+            mCtx.beginPath();
+            mCtx.moveTo(slabX, slabY);
+            mCtx.lineTo(slabX + depthX, slabY - depthY);
+            mCtx.lineTo(slabX + slabW + depthX, slabY - depthY);
+            mCtx.lineTo(slabX + slabW, slabY);
+            mCtx.closePath();
+            mCtx.fill(); mCtx.stroke();
+
+            mCtx.fillStyle = 'rgba(15, 23, 42, 0.55)';
+            mCtx.beginPath();
+            mCtx.moveTo(slabX + slabW, slabY);
+            mCtx.lineTo(slabX + slabW + depthX, slabY - depthY);
+            mCtx.lineTo(slabX + slabW + depthX, slabY + slabH - depthY);
+            mCtx.lineTo(slabX + slabW, slabY + slabH);
+            mCtx.closePath();
+            mCtx.fill(); mCtx.stroke();
+
+            // Main Front Cross-Sectional Crystal Face
+            const crystalGrad = mCtx.createLinearGradient(slabX, slabY, slabX, slabY + slabH);
+            crystalGrad.addColorStop(0, 'rgba(30, 41, 59, 0.65)');
+            crystalGrad.addColorStop(0.5, 'rgba(15, 23, 42, 0.78)');
+            crystalGrad.addColorStop(1, 'rgba(30, 41, 59, 0.65)');
+            mCtx.fillStyle = crystalGrad;
+            mCtx.fillRect(slabX, slabY, slabW, slabH);
+            mCtx.strokeStyle = '#60a5fa';
+            mCtx.lineWidth = 2;
+            mCtx.strokeRect(slabX, slabY, slabW, slabH);
+
+            // Left & Right Copper/Green Current Contacts
+            mCtx.fillStyle = '#059669';
+            mCtx.fillRect(slabX - 10, slabY + slabH * 0.25, 10, slabH * 0.5);
+            mCtx.fillRect(slabX + slabW, slabY + slabH * 0.25, 10, slabH * 0.5);
+
+            // Top & Bottom Red Hall Voltage Contacts
+            mCtx.fillStyle = '#dc2626';
+            mCtx.fillRect(slabX + slabW * 0.43, slabY - 8, slabW * 0.14, 8);
+            mCtx.fillRect(slabX + slabW * 0.43, slabY + slabH, slabW * 0.14, 8);
+
+            // 1. Magnetic Field Vector Symbols (Z-Axis: ⊙ Out of page or ⊗ Into page)
+            if (Math.abs(fieldNorm) > 0.02) {
+                const alpha = Math.min(0.85, 0.22 + Math.abs(fieldNorm) * 0.65);
+                mCtx.strokeStyle = `rgba(251, 191, 36, ${alpha})`;
+                mCtx.fillStyle = `rgba(251, 191, 36, ${alpha})`;
+                mCtx.lineWidth = 1.5;
+
+                for (let bx = slabX + 45; bx <= slabX + slabW - 35; bx += 75) {
+                    for (let by = slabY + 38; by <= slabY + slabH - 30; by += 62) {
+                        mCtx.beginPath();
+                        mCtx.arc(bx, by, 9, 0, Math.PI * 2);
+                        mCtx.stroke();
+                        if (fieldNorm > 0) {
+                            // Dot (⊙)
+                            mCtx.beginPath(); mCtx.arc(bx, by, 2.5, 0, Math.PI * 2); mCtx.fill();
+                        } else {
+                            // Cross (⊗)
+                            mCtx.beginPath();
+                            mCtx.moveTo(bx - 5, by - 5); mCtx.lineTo(bx + 5, by + 5);
+                            mCtx.moveTo(bx + 5, by - 5); mCtx.lineTo(bx - 5, by + 5);
+                            mCtx.stroke();
+                        }
+                    }
+                }
+                mCtx.font = 'bold 11px Inter, sans-serif';
+                mCtx.textAlign = 'left';
+                mCtx.fillText(
+                    fieldNorm > 0 ? 'H (Z-Axis): ⊙ Outward (+Z)' : 'H (Z-Axis): ⊗ Inward (−Z)',
+                    slabX + 10,
+                    slabY - 12
+                );
+            }
+
+            // 2. Transverse Hall Electric Field (E_n) Arrows & Surface Charge Accumulation
+            if (Math.abs(hallNorm) > 0.02) {
+                const eAlpha = Math.min(0.95, 0.25 + Math.abs(hallNorm) * 0.75);
+                const dirY = hallNorm > 0 ? 1 : -1; // +1 means top is +, bottom is -, so E_n points downward (+1)
+
+                // Glowing Top & Bottom Surface Charge Accumulation Strips
+                const topColor = hallNorm > 0 ? `rgba(239, 68, 68, ${eAlpha * 0.45})` : `rgba(59, 130, 246, ${eAlpha * 0.45})`;
+                const botColor = hallNorm > 0 ? `rgba(59, 130, 246, ${eAlpha * 0.45})` : `rgba(239, 68, 68, ${eAlpha * 0.45})`;
+
+                mCtx.fillStyle = topColor;
+                mCtx.fillRect(slabX + 2, slabY + 2, slabW - 4, 24);
+                mCtx.fillStyle = botColor;
+                mCtx.fillRect(slabX + 2, slabY + slabH - 26, slabW - 4, 24);
+
+                // Accumulated + and − Ions along Top and Bottom Edges
+                mCtx.font = 'bold 13px JetBrains Mono, monospace';
+                mCtx.textAlign = 'center';
+                for (let cx = slabX + 32; cx <= slabX + slabW - 32; cx += 48) {
+                    mCtx.fillStyle = hallNorm > 0 ? '#fca5a5' : '#93c5fd';
+                    mCtx.fillText(hallNorm > 0 ? '⊕' : '⊖', cx, slabY + 18);
+
+                    mCtx.fillStyle = hallNorm > 0 ? '#93c5fd' : '#fca5a5';
+                    mCtx.fillText(hallNorm > 0 ? '⊖' : '⊕', cx, slabY + slabH - 9);
+                }
+
+                // Vertical Hall Electric Field (E_n) Lines from + Face to − Face
+                mCtx.strokeStyle = `rgba(244, 63, 94, ${eAlpha})`;
+                mCtx.fillStyle = `rgba(244, 63, 94, ${eAlpha})`;
+                mCtx.lineWidth = 1.6;
+                for (let ex = slabX + 80; ex <= slabX + slabW - 80; ex += 95) {
+                    const y1 = slabY + 28;
+                    const y2 = slabY + slabH - 28;
+                    mCtx.beginPath(); mCtx.moveTo(ex, y1); mCtx.lineTo(ex, y2); mCtx.stroke();
+                    const tipY = dirY === 1 ? y2 : y1;
+                    mCtx.beginPath();
+                    mCtx.moveTo(ex, tipY);
+                    mCtx.lineTo(ex - 4.5, tipY - 7 * dirY);
+                    mCtx.lineTo(ex + 4.5, tipY - 7 * dirY);
+                    mCtx.closePath();
+                    mCtx.fill();
+                }
+
+                mCtx.font = 'bold 11px Inter, sans-serif';
+                mCtx.textAlign = 'right';
+                mCtx.fillStyle = '#fda4af';
+                mCtx.fillText(`Hall Field En = Vn / y (${(Math.abs(STATE.hallVoltageMv) / STATE.thicknessMm).toFixed(2)} V/m)`, slabX + slabW - 8, slabY - 12);
+            }
+
+            // 3. Animated Drifting Charge Carriers (Holes or Electrons) with Lorentz Curve
+            // Conventional current I moves +X when currNorm > 0.
+            // Holes (+e) drift in direction of I (+currNorm); Electrons (-e) drift opposite (-currNorm).
+            const carrierDriftSign = isPType ? Math.sign(currNorm) : -Math.sign(currNorm);
+            const speed = Math.abs(currNorm) * 0.0085;
+
+            // Lorentz deflection side: for both holes and electrons, F_m = q(v x H) deflects them to the SAME face!
+            // Specifically, Top face gets + when hallNorm > 0 (holes accumulate top if p-type; electrons accumulate top if n-type -> hallNorm < 0).
+            const deflectDirection = isPType ? -Math.sign(hallNorm) : Math.sign(hallNorm); // -1 = top edge, +1 = bottom edge
+            const deflectStrength = Math.abs(hallNorm);
+
+            MICRO.carriers.forEach(c => {
+                c.phase += 0.08;
+                if (speed > 0.0001) {
+                    c.x += carrierDriftSign * speed * c.vxJitter;
+                    if (c.x > 1) { c.x -= 1; c.y = 0.16 + Math.random() * 0.68; }
+                    if (c.x < 0) { c.x += 1; c.y = 0.16 + Math.random() * 0.68; }
+                }
+
+                // Smooth Lorentz deflection trajectory toward the accumulating face
+                const targetEdgeY = deflectDirection < 0 ? 0.12 : 0.88;
+                const effectiveY = c.y + (targetEdgeY - c.y) * deflectStrength * 0.55 + Math.sin(c.phase) * 0.012;
+
+                const px = slabX + 14 + c.x * (slabW - 28);
+                const py = slabY + effectiveY * slabH;
+
+                // Carrier Glow & Sphere
+                mCtx.save();
+                mCtx.beginPath();
+                mCtx.arc(px, py, 7.5, 0, Math.PI * 2);
+                mCtx.fillStyle = isPType ? 'rgba(239, 68, 68, 0.28)' : 'rgba(56, 189, 248, 0.28)';
+                mCtx.fill();
+
+                mCtx.beginPath();
+                mCtx.arc(px, py, 5.2, 0, Math.PI * 2);
+                mCtx.fillStyle = isPType ? '#ef4444' : '#0284c7';
+                mCtx.fill();
+                mCtx.strokeStyle = '#ffffff';
+                mCtx.lineWidth = 1.1;
+                mCtx.stroke();
+
+                mCtx.fillStyle = '#ffffff';
+                mCtx.font = 'bold 9px JetBrains Mono, monospace';
+                mCtx.textAlign = 'center';
+                mCtx.fillText(isPType ? '+' : '−', px, py + 3);
+                mCtx.restore();
+            });
+
+            // 4. External Hall Millivoltmeter Schematic Loop at Bottom
+            const meterY = slabY + slabH + 26;
+            const midX = slabX + slabW * 0.5;
+            mCtx.strokeStyle = '#f87171';
+            mCtx.lineWidth = 1.8;
+            mCtx.beginPath();
+            // Top red contact wire around to meter
+            mCtx.moveTo(midX, slabY - 8);
+            mCtx.lineTo(midX, slabY - 22);
+            mCtx.lineTo(slabX - 28, slabY - 22);
+            mCtx.lineTo(slabX - 28, meterY);
+            mCtx.lineTo(midX - 58, meterY);
+            // Bottom red contact wire to meter
+            mCtx.moveTo(midX, slabY + slabH + 8);
+            mCtx.lineTo(midX, meterY);
+            mCtx.lineTo(midX + 58, meterY);
+            mCtx.stroke();
+
+            // Digital V_n Pill Badge
+            mCtx.fillStyle = '#1e293b';
+            roundRect(mCtx, midX - 58, meterY - 13, 116, 26, 13);
+            mCtx.fill();
+            mCtx.strokeStyle = '#f43f5e';
+            mCtx.lineWidth = 1.5;
+            mCtx.stroke();
+            mCtx.fillStyle = '#fbbf24';
+            mCtx.font = 'bold 11px JetBrains Mono, monospace';
+            mCtx.textAlign = 'center';
+            mCtx.fillText(`Vn = ${STATE.hallVoltageMv >= 0 ? '+' : ''}${STATE.hallVoltageMv.toFixed(2)} mV`, midX, meterY + 4);
+
+            // Conventional Current Direction Arrow Indicator
+            if (Math.abs(currNorm) > 0.02) {
+                const cDir = Math.sign(currNorm);
+                mCtx.fillStyle = '#34d399';
+                mCtx.font = 'bold 11px Inter, sans-serif';
+                mCtx.textAlign = 'center';
+                mCtx.fillText(
+                    cDir > 0 ? 'Conventional Current I (→ +X)' : 'Conventional Current I (← −X)',
+                    midX,
+                    slabY + slabH + 18
+                );
+            }
+
+            mCtx.restore();
+            updateMicroHud();
+            MICRO.animId = requestAnimationFrame(renderMicroSimulation);
+        }
+
+        window.addEventListener('resize', () => {
+            resizeLabCanvas();
+            if (!document.getElementById('tab-observations').classList.contains('hidden')) renderTablesAndGraphs();
+        });
+
+        window.onload = function () {
+            resizeLabCanvas();
+            updatePhysics();
+            renderTablesAndGraphs();
+            requestAnimationFrame(renderWorkbench);
+        };
+    </script>
+</body>
+
+</html>
